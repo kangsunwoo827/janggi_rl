@@ -9,9 +9,6 @@ import copy
 from param import *
 
 
-
-Pieces_list=[None,'jol','sa','sang','ma','po','cha','wang']
-
 wait_time = 1
 
 
@@ -31,14 +28,13 @@ class Pieces(pygame.sprite.Sprite):
         self.sizex=sizex
         self.sizey=sizey
             
-        self.image = pygame.image.load("C:/Users/Sunny.LAPTOP-L010FOP1/Desktop/장기알 이미지/"+self.team+name+'.png').convert_alpha()
+        self.image = pygame.image.load("piece_img/"+self.team+name+'.png').convert_alpha()
 
         self.scale_image=pygame.transform.scale(self.image, (sizex,sizey))
     
     def draw(self):
         DISPLAYSURF.blit(self.scale_image, (self.x, self.y))
         
-
 class Can_go(pygame.sprite.Sprite):
     def __init__(self,mark,before_y,before_x,gameboard,turn):
         self.marker=mark
@@ -420,10 +416,6 @@ class Can_go(pygame.sprite.Sprite):
         return real_can_go
  
 
-
-
-
-
 def ReturnName():
     return '장기'
 
@@ -436,14 +428,13 @@ def Return_BoardParams():
     return GAMEBOARD_SIZE, WIN_MARK
 
 
-
-
 class GameState:
     def __init__(self,cho_form='mssm',han_form='mssm'):
-        #cho_form 의 형태는 'mssm'가 같은 형식 m는 마 s는 상
+        #cho_form 의 형태는 'mssm'과 같은 형식 m는 마 s는 상
         global FPS_CLOCK, DISPLAYSURF, BASIC_FONT, TITLE_FONT, GAMEOVER_FONT
 
         pygame.init()
+
         FPS_CLOCK = pygame.time.Clock()
 
         DISPLAYSURF = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -480,19 +471,19 @@ class GameState:
         self.wait_move=False
         self.marker=0
         
-        # No stone: 0, Cho stone: Plus, Han stone = minus
+        # No mark: 0, Cho mark: Plus, Han mark = minus
         # 병 1 사 2 상 3 마 4 포 5 차 6 왕7
        
        
-        a=self.cho_form[0]
-        b=self.cho_form[1]
-        c=self.cho_form[2]
-        d=self.cho_form[3]
+        A=self.cho_form[0]
+        B=self.cho_form[1]
+        C=self.cho_form[2]
+        D=self.cho_form[3]
         formation_cho=np.array([[0,0,0,0,0,0,0,0,0],
                                 [1,0,1,0,1,0,1,0,1],
                                 [0,5,0,0,0,0,0,5,0],
                                 [0,0,0,0,7,0,0,0,0],
-                                [6,a,b,2,0,2,c,d,6]])
+                                [6,A,B,2,0,2,C,D,6]])
         
         a=self.han_form[0]
         b=self.han_form[1]
@@ -615,29 +606,11 @@ class GameState:
                             self.turn=1   
                         break
                 
-        
-#         # If vs mode and MCTS works
-#         if np.any(input_) != 0:
-#             action_index = np.argmax(input_)
-#             y_index = int(action_index / 3)
-#             x_index = action_index % 3
-#             check_valid_pos = True
+      
 
-        # Change the gameboard according to the stone's index
-#         if check_valid_pos:
-#             if self.turn == 0:
-#                 self.gameboard[y_index, x_index] = 1
-#                 self.turn = 1
-#                 self.num_mark += 1
-#             else:
-#                 self.gameboard[y_index, x_index] = -1
-#                 self.turn = 0
-#                 self.num_mark += 1
-
-        
         # Display Information
         self.title_msg()
-        self.rule_msg()
+        self.form_msg()
         self.score_msg()
         self.jang_msg()
 
@@ -675,14 +648,11 @@ class GameState:
         for l in [[3,0,5,2],[3,2,5,0],[3,7,5,9],[3,9,5,7]]:
             pygame.draw.line(DISPLAYSURF, BLACK, (X_coord[l[0]],Y_coord[l[1]]), (X_coord[l[2]],Y_coord[l[3]]), 2)
         
-        
-#         # Draw center circle
-#         pygame.draw.circle(DISPLAYSURF, WHITE, (
-#         MARGIN + 4 * int(GRID_SIZE / (GAMEBOARD_SIZE)),
-#         TOP_MARGIN + 4 * int(GRID_SIZE / (GAMEBOARD_SIZE))), 5, 0)
+        #=================================================#
+        #==================Draw marks=====================#
+        #=================================================#
 
-        # Draw marks
-        # No stone: 0, Cho stone: Plus, Han stone = minus
+        # No mark: 0, Cho mark: Plus, Han mark = minus
         # 병 1 사 2 상 3 마 4 포 5 차 6 왕7
         self.cho_score,self.han_score=0,0
         
@@ -770,7 +740,7 @@ class GameState:
     def title_msg(self):
         titleSurf = TITLE_FONT.render('Janggi', True, BLACK)
         titleRect = titleSurf.get_rect()
-        titleRect.topleft = (MARGIN, 10)
+        titleRect.topleft = (180, 30)
         DISPLAYSURF.blit(titleSurf, titleRect)
     
     def jang_msg(self):            
@@ -787,38 +757,34 @@ class GameState:
                 DISPLAYSURF.blit(jangSurf, jangRect)
 
 
-    # Display rule
-    def rule_msg(self):
-        ruleSurf1 = BASIC_FONT.render('cho :'+''.join(self.cho_formation),
+    # Display formation
+    def form_msg(self):
+        formSurf1 = BASIC_FONT.render('cho :'+''.join(self.cho_formation),
                                       True, BLACK)
-        ruleRect1 = ruleSurf1.get_rect()
-        ruleRect1.topleft = (MARGIN, 50)
-        DISPLAYSURF.blit(ruleSurf1, ruleRect1)
+        formRect1 = formSurf1.get_rect()
+        formRect1.topleft = (WINDOW_WIDTH-120, 80)
+        DISPLAYSURF.blit(formSurf1, formRect1)
 
-        ruleSurf2 = BASIC_FONT.render('han :'+''.join(self.han_formation), True,
+        formSurf2 = BASIC_FONT.render('han :'+''.join(self.han_formation), True,
                                       BLACK)
-        ruleRect2 = ruleSurf1.get_rect()
-        ruleRect2.topleft = (MARGIN, 70)
-        DISPLAYSURF.blit(ruleSurf2, ruleRect2)
+        formRect2 = formSurf1.get_rect()
+        formRect2.topleft = (WINDOW_WIDTH-120, 105)
+        DISPLAYSURF.blit(formSurf2, formRect2)
 
     # Display scores
     def score_msg(self):
-        scoreSurf1 = BASIC_FONT.render('Score: ', True, BLACK)
+
+        scoreSurf1 = BASIC_FONT.render('Cho Vs Han',
+                                       True, BLACK)
         scoreRect1 = scoreSurf1.get_rect()
-        scoreRect1.topleft = (MARGIN, 105)
+        scoreRect1.topleft = (MARGIN, 80)
         DISPLAYSURF.blit(scoreSurf1, scoreRect1)
 
-        scoreSurf2 = BASIC_FONT.render('Cho =' + str(self.cho_score) + 'pt       ',
+        scoreSurf2 = BASIC_FONT.render(str(self.cho_score) + 'pt       '+str(self.han_score)+'pt',
                                        True, BLACK)
         scoreRect2 = scoreSurf2.get_rect()
-        scoreRect2.topleft = (scoreRect1.midright[0], 105)
+        scoreRect2.topleft = (MARGIN, 105)
         DISPLAYSURF.blit(scoreSurf2, scoreRect2)
-
-        scoreSurf3 = BASIC_FONT.render('Han = ' + str(self.han_score) +'pt',
-                                       True, BLACK)
-        scoreRect3 = scoreSurf3.get_rect()
-        scoreRect3.topleft = (scoreRect2.midright[0], 105)
-        DISPLAYSURF.blit(scoreSurf3, scoreRect3)
 
 
     # Display turn
@@ -831,7 +797,7 @@ class GameState:
         else:
             turnSurf = BASIC_FONT.render("Han's Turn!", True, BLACK)
             turnRect = turnSurf.get_rect()
-            turnRect.topleft = (WINDOW_WIDTH - 100, 135)
+            turnRect.topleft = (WINDOW_WIDTH - 120, 135)
             DISPLAYSURF.blit(turnSurf, turnRect)
 
     # Check win
