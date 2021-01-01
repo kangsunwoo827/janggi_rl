@@ -400,8 +400,7 @@ class Can_go(pygame.sprite.Sprite):
                 pygame.draw.circle(DISPLAYSURF,GREEN,(x,y),7)
             else:
                 pygame.draw.circle(DISPLAYSURF,RED,(x,y),7)
-        pygame.display.update()
-        
+     
     def real_go(self,marker,before,gameboard):
         real_can_go=[]
         can_list=self.can_go(marker,before,gameboard)
@@ -510,6 +509,8 @@ class GameState:
             
 #     def step(self, input_):  # Game loop
     def step(self):
+        pygame.display.update()
+        
               # Initial settings
         if self.init == True:
             self.num_turn = 0
@@ -603,7 +604,6 @@ class GameState:
 
         # Display who's turn
         self.turn_msg()
-        pygame.display.update()
 
         # Check_win 0: playing, 1: cho win, 2: han win
         self.win_index = self.check_win()
@@ -732,15 +732,19 @@ class GameState:
     
     def jang_msg(self):            
         if self.janggoon:
+            if self.turn:
+                color=BLUE
+            else:
+                color=RED
             if self.mate:
-                mateSurf = TITLE_FONT.render('Mate!', True, BLACK)
+                mateSurf = TITLE_FONT.render('Mate!', True, color)
                 mateRect = mateSurf.get_rect()
-                mateRect.topright = (WINDOW_WIDTH-MARGIN-10,50)
+                mateRect.center = (HALF_WINDOW_WIDTH,150)
                 DISPLAYSURF.blit(mateSurf, mateRect)
             else:
-                jangSurf = TITLE_FONT.render('Janggoon!', True, BLACK)
+                jangSurf = TITLE_FONT.render('Janggoon!', True, color)
                 jangRect = jangSurf.get_rect()
-                jangRect.topright = (WINDOW_WIDTH-MARGIN-10,50)
+                jangRect.center = (HALF_WINDOW_WIDTH,150)
                 DISPLAYSURF.blit(jangSurf, jangRect)
 
 
@@ -856,7 +860,7 @@ class GameState:
             reasonRect = reasonSurf.get_rect()
             reasonRect.midtop = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
             DISPLAYSURF.blit(reasonSurf, reasonRect)
-            pygame.display.update()
+           
 
             time.sleep(wait_time)
             self.init = True

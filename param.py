@@ -15,7 +15,7 @@ BACK         = (245, 225, 195)
 
 # 화면에 대한 파라미터
 
-FPS = 30
+FPS = 60
 WINDOW_WIDTH = 440
 WINDOW_HEIGHT = 640
 TOP_MARGIN = 200
