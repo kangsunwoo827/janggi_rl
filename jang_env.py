@@ -1,7 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 #장기
+#이 파일에서 정의된 것
+#1) Pieces 클래스 . 장기 알을 의미
+#2) Can_go 클래스. 장기 알이 이동가능한지 표시하는 걸 의미
+#3) Gamestate 클래스. 게임을 총 관리하는 클래스
 import random, sys, time, math, pygame
 from pygame.locals import *
 import numpy as np
@@ -310,9 +311,7 @@ class Can_go(pygame.sprite.Sprite):
                     
                 if block:
                     continue
-            
-                          
-           
+        
             can_list.append(l)
             
         return can_list
@@ -415,18 +414,6 @@ class Can_go(pygame.sprite.Sprite):
                 real_can_go.append(l)
         return real_can_go
  
-
-def ReturnName():
-    return '장기'
-
-
-def Return_Num_Action():
-    return 9 * 8
-
-
-def Return_BoardParams():
-    return GAMEBOARD_SIZE, WIN_MARK
-
 
 class GameState:
     def __init__(self,cho_form='mssm',han_form='mssm'):
@@ -880,5 +867,3 @@ if __name__ == "__main__":
 
     while True:
         game.step()
-
-# pygame.quit()
