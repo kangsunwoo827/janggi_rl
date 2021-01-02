@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 #장기
 #이 파일에서 정의된 것
 #1) Pieces 클래스 . 장기 알을 의미
@@ -12,7 +13,10 @@ from param import *
 
 wait_time = 1
 
+import os
+os.environ['DISPLAY']
 
+    
 class Pieces(pygame.sprite.Sprite):
     def __init__(self,team,name_num,x,y,sizex,sizey):
         #team 0 = cho and 1 = han
@@ -417,7 +421,7 @@ class Can_go(pygame.sprite.Sprite):
 class GameState:
     def __init__(self,cho_form='mssm',han_form='mssm'):
         #cho_form 의 형태는 'mssm'과 같은 형식 m는 마 s는 상
-        global FPS_CLOCK, DISPLAYSURF, BASIC_FONT, TITLE_FONT, GAMEOVER_FONT
+        global FPS_CLOCK, DISPLAYSURF, BASIC_FONT,NUM_FONT, TITLE_FONT, GAMEOVER_FONT
 
         pygame.init()
 
@@ -427,9 +431,10 @@ class GameState:
 
         pygame.display.set_caption('장기')
 
-        BASIC_FONT = pygame.font.Font('freesansbold.ttf', 16)
-        TITLE_FONT = pygame.font.Font('freesansbold.ttf', 24)
-        GAMEOVER_FONT = pygame.font.Font('freesansbold.ttf', 48)
+        BASIC_FONT = pygame.font.Font('/usr/share/fonts/NanumGothic.ttf', 16)
+        NUM_FONT= pygame.font.Font('/usr/share/fonts/NanumPen.ttf', 20)
+        TITLE_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicBold.ttf', 24)
+        GAMEOVER_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicExtraBold.ttf', 48)
 
         # Set initial parameters
         self.init = False
@@ -507,8 +512,10 @@ class GameState:
                 TOP_MARGIN + i *int(GRID_SIZE / (POINT_HEIGHT-1)))
 
             
-#     def step(self, input_):  # Game loop
-    def step(self):
+#   Game loop
+    def step(self,input_=False):
+        #input의 형태는 ((a,b),(c,d)) a,b의 말을 c,d로 옮겨라
+
         pygame.display.update()
         
               # Initial settings
@@ -548,6 +555,7 @@ class GameState:
         
         #mouse_pos 받기
         
+
         if mouse_pos != 0 :
             for i in range(len(self.X_coord)):
                 for j in range(len(self.Y_coord)):
@@ -558,8 +566,7 @@ class GameState:
                         x_index = i
                         y_index = j
 
-                        # If selected spot is 아무것도 없으면, it is not valid move!
-                        # 같은 팀 말이 아니여도 안됨!
+                        # If selected spot is blank or enemy, it is not valid move!
 
                         if self.gameboard[j, i]*((-1)**self.turn) >0:
                             self.wait_move=True
@@ -567,8 +574,11 @@ class GameState:
                             before_y_index=y_index
                             before_x_index=x_index
                             
-                            
-            # board 움직이기
+        if bool(input_):
+            self.wait_move=True
+            self.x_index=input_[0][0]   
+        
+        # board 움직이기
         
         if self.wait_move: 
             if check_valid_pos:
@@ -598,6 +608,7 @@ class GameState:
 
         # Display Information
         self.title_msg()
+        self.num_msg()
         self.form_msg()
         self.score_msg()
         self.jang_msg()
@@ -619,7 +630,7 @@ class GameState:
     # Draw main board
     def draw_main_board(self,X_coord,Y_coord):
         #판 색만들기 
-        pygame.draw.rect(DISPLAYSURF, JANG, [20,TOP_MARGIN-20,400,400])
+        pygame.draw.rect(DISPLAYSURF, JANG, [0,TOP_MARGIN-40,440,440])
 
         # Horizontal Lines
         for i in (X_coord):
@@ -727,8 +738,39 @@ class GameState:
     def title_msg(self):
         titleSurf = TITLE_FONT.render('Janggi', True, BLACK)
         titleRect = titleSurf.get_rect()
-        titleRect.topleft = (180, 30)
+        titleRect.center = (HALF_WINDOW_WIDTH, 25)
         DISPLAYSURF.blit(titleSurf, titleRect)
+
+    def num_msg(self):
+        #세로 줄에 대한 숫자 표시
+        for i in range(9):
+            num1Surf = NUM_FONT.render(str(i+1), True, BLACK)
+            num1Rect = num1Surf.get_rect()
+            num1Rect.center = (self.X_coord[i],TOP_MARGIN-30)
+            DISPLAYSURF.blit(num1Surf, num1Rect)
+
+            num2Surf = NUM_FONT.render(str(i+1), True, BLACK)
+            num2Rect = num2Surf.get_rect()
+            num2Rect.center = (self.X_coord[i],TOP_MARGIN+ GRID_SIZE+30)
+            DISPLAYSURF.blit(num2Surf, num2Rect)
+
+        #가로 줄에 대한 숫자 표시
+        for i in range(10):
+            num=(i+1)%10
+            num1Surf = NUM_FONT.render(str(num), True, BLACK)
+            num1Rect = num1Surf.get_rect()
+            num1Rect.center = (MARGIN-30,self.Y_coord[i])
+            DISPLAYSURF.blit(num1Surf, num1Rect)
+
+            num2Surf = NUM_FONT.render(str(num), True, BLACK)
+            num2Rect = num2Surf.get_rect()
+            num2Rect.center = (MARGIN+GRID_SIZE+30,self.Y_coord[i])
+            DISPLAYSURF.blit(num2Surf, num2Rect)
+
+
+
+
+
     
     def jang_msg(self):            
         if self.janggoon:
@@ -739,12 +781,12 @@ class GameState:
             if self.mate:
                 mateSurf = TITLE_FONT.render('Mate!', True, color)
                 mateRect = mateSurf.get_rect()
-                mateRect.center = (HALF_WINDOW_WIDTH,150)
+                mateRect.center = (HALF_WINDOW_WIDTH,140)
                 DISPLAYSURF.blit(mateSurf, mateRect)
             else:
                 jangSurf = TITLE_FONT.render('Janggoon!', True, color)
                 jangRect = jangSurf.get_rect()
-                jangRect.center = (HALF_WINDOW_WIDTH,150)
+                jangRect.center = (HALF_WINDOW_WIDTH,140)
                 DISPLAYSURF.blit(jangSurf, jangRect)
 
 
