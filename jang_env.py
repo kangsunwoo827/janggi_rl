@@ -16,7 +16,6 @@ wait_time = 1
 import os
 os.environ['DISPLAY']
 
-    
 class Pieces(pygame.sprite.Sprite):
     def __init__(self,team,name_num,x,y,sizex,sizey):
         #team 0 = cho and 1 = han
@@ -559,12 +558,11 @@ class GameState:
         if mouse_pos != 0 :
             for i in range(len(self.X_coord)):
                 for j in range(len(self.Y_coord)):
-                    if (self.X_coord[i] - 15 < mouse_pos[0] < self.X_coord[
-                        i] + 15) and (self.Y_coord[j] - 15 < mouse_pos[1] <
-                                              self.Y_coord[j] + 15):
+                    if  (self.X_coord[i] - 15 < mouse_pos[0] < self.X_coord[i] + 15) and (self.Y_coord[j] - 15 < mouse_pos[1] < self.Y_coord[j] + 15):
                         check_valid_pos = True
                         x_index = i
                         y_index = j
+                        print(i,j)
 
                         # If selected spot is blank or enemy, it is not valid move!
 
@@ -576,8 +574,41 @@ class GameState:
                             
         if bool(input_):
             self.wait_move=True
-            self.x_index=input_[0][0]   
-        
+            if not input_[0][0]:
+                y_index=9
+            else:
+                y_index=input_[0][0]-1
+            x_index=input_[0][1]-1
+            
+            before_y_index=y_index
+            before_x_index=x_index
+            self.marker=((-1)**self.turn)*self.gameboard[y_index, x_index]
+            can=Can_go(self.marker,before_y_index,before_x_index,self.gameboard,self.turn)
+            can.draw(self.X_coord,self.Y_coord)
+
+            if not input_[1][0]:
+                y_index=9
+            else:
+                y_index=input_[1][0]-1
+            x_index=input_[1][1]-1
+
+            #이동과정
+            if  self.gameboard[y_index,x_index]*((-1)**self.turn) <=0:
+                before=(before_y_index,before_x_index)
+               
+                for can_lst in can.real_go(self.marker,before,self.gameboard):
+                    if can_lst==[y_index,x_index]:
+                        self.gameboard[y_index,x_index]=self.gameboard[before_y_index,before_x_index]
+                        self.gameboard[before_y_index,before_x_index]=0
+                        self.janggoon=can.janggoon(self.gameboard)
+                        self.wait_move=False
+                        if self.turn:
+                            self.turn=0
+                        else:
+                            self.turn=1   
+                        break
+       
+            
         # board 움직이기
         
         if self.wait_move: 
@@ -910,6 +941,6 @@ class GameState:
 
 if __name__ == "__main__":
     game=GameState('mssm','mssm')
-
+    game.step(((0,2),(8,3)))
     while True:
         game.step()
