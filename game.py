@@ -1,33 +1,36 @@
 import numpy as np
 import logging
-from utils import coord_to_action, action_to_coord
+from utils import coord_to_action, action_to_coord, can_move
 
 #게임 보드판과 턴을 받고 다양한 함수 실행
 #보드판은 row 10에 col9인 array (shape = 10,9 )
 # Cho turn: +1, Han turn: -1
 # No mark: 0, Cho mark: Plus, Han mark = minus
 
-class GameState():
-	def __init__(self, board, playerTurn, num_turn):
+class GameFunction():
+	def __init__(self, board, num_turn):
+		#홀수면 Cho'turn -> +1
+		if num_turn%2 :
+			self.playerTurn=+1
+		else:
+			self.playerTurn=-1
 		self.board = board
-		self.playerTurn = playerTurn
 		self.num_turn=num_turn
-		self.pieces = [None,'jol','sa','sang','ma','po','cha','wang']
-		self.score_lst=[0,2,3,3,5,7,13,None]
-		
-		self.BoardToArray = self._convertBoardToArr()
-		self.id = self._convertStateToId()
-	
-		self.score = self._getScore()
+		self.pieces = [None,'졸','사','상','마','포','차','왕']
+		self.score_lst=[0,2,3,3,5,7,13,0]
+
 		self.playerScore=0
 		self.oppoScore=0
-		if playerTurn>0:
+		if self.playerTurn>0:
 			self.oppoScore+=1.5
 		else:
 			self.playerScore+=1.5
 
-		# self.allowedActions = self._allowedActions()
-		# self.isEndGame = self._checkForEndGame()
+		self.BoardToArray = self._convertBoardToArr()
+		self.id = self._convertStateToId()
+		self.score = self._getScore()
+		self.allowedActions = self._allowedActions()
+		self.isEndGame = self._checkForEndGame()
 		# self.value = self._getValue()
 
 
@@ -35,14 +38,27 @@ class GameState():
 	#Action 중 가능한 Action return
 	def _allowedActions(self):
 		allowed = []
-		# can_start =
-		for i in range(len(self.board)):
-			if i >= len(self.board) - 7:
-				if self.board[i]==0:
-					allowed.append(i)
-			else:
-				if self.board[i] == 0 and self.board[i+7] != 0:
-					allowed.append(i)
+		
+		#player_piece는 살아있는 아군 기물의 위치와 번호를 담은 리스트
+		player_pieces=[]
+		for piece in range(1,8):
+			y_coord=np.where(self.board==piece*self.playerTurn)[0]
+			x_coord=np.where(self.board==piece*self.playerTurn)[1]
+			for i,y in enumerate(y_coord):
+				coord=[y, x_coord[i]]
+				player_pieces.append([piece,coord])
+
+		for pp in player_pieces:
+			piece=pp[0]
+			before=pp[1]
+			after_list=can_move(piece, before, self.board, self.playerTurn)
+			
+			for after in after_list:
+
+				allowed.append([before,after])
+
+		#coord 형태로 되어있기 때문에 action 형태로 변환
+		allowed=[coord_to_action(coord) for coord in allowed]
 
 		return allowed
 
@@ -62,23 +78,41 @@ class GameState():
 		id = ''.join(map(str,position))
 		return id
 
+	#게임이 끝났는지 확인
 	def _checkForEndGame(self):
-		if num_turn >= 200:
-			return True
+		isEnd=False
+		
+		#본인의 왕이 죽었다면 게임 끝 (패배)
+		king_position=np.isin(self.board,7*self.playerTurn)
+		if np.any(king_position):
+			isEnd=True
+			who_win= -self.playerTurn
 
-		for x,y,z,a in self.winners:
-			if (self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.playerTurn):
-				return 1
-		return 0
+		playerScore,oppoScore=self.score
+		#본인의 점수가 10점보다 적다면 게임 끝 (패배)
+		if playerScore<10:
+			isEnd=True
+			who_win= -self.playerTurn
+		
+
+		#200턴안에 안끝나면 종료
+		if self.num_turn > 200:
+			isEnd=True
+			if playerScore>oppoScore :
+				who_win=self.playerTurn
+			else:
+				who_win= -self.playerTurn
+
+		return isEnd,who_win
 
 
-	def _getValue(self):
-		# This is the value of the state for the current player
-		# i.e. if the previous player played a winning move, you lose
-		for x,y,z,a in self.winners:
-			if (self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.playerTurn):
-				return (-1, -1, 1)
-		return (0, 0, 0)
+	# def _getValue(self):
+	# 	# This is the value of the state for the current player
+	# 	# i.e. if the previous player played a winning move, you lose
+	# 	for x,y,z,a in self.winners:
+	# 		if (self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.playerTurn):
+	# 			return (-1, -1, 1)
+	# 	return (0, 0, 0)
 
 
 	def _getScore(self): 
@@ -115,11 +149,11 @@ class GameState():
 		return (newState, value, done) 
 
 
-
+ 
 
 	def render(self, logger):
-		for r in range(6):
-			logger.info([self.pieces[str(x)] for x in self.board[7*r : (7*r + 7)]])
+		for row in self.board:
+			logger.info([self.pieces[cell] for cell in row])
 		logger.info('--------------')
 
 
@@ -133,7 +167,7 @@ class Game:
 		self.pieces = {'1':'X', '0': '-', '-1':'O'}
 		self.grid_shape = (6,7)
 		self.input_shape = (2,6,7)
-		self.name = 'connect4'
+		self.name = 'janggi'
 		self.state_size = len(self.gameState.binary)
 		self.action_size = len(self.actionSpace)
 
