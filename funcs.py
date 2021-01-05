@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-import loggers as lg
+# import loggers as lg
 
 from game import Game, GameState
 from model import Residual_CNN
@@ -142,3 +142,6 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
                 points[players[-state.playerTurn]['name']].append(pts[1])
 
     return (scores, memory, points, sp_scores)
+
+
+

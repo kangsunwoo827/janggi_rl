@@ -30,4 +30,4 @@ HALF_WINDOW_HEIGHT = int(WINDOW_HEIGHT / 2)
 
 CELL_SIZE = int(GRID_SIZE/(POINT_WIDTH-1))
 
-Pieces_list=[None,'jol','sa','sang','ma','po','cha','wang']
+
