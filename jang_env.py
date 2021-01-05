@@ -8,13 +8,14 @@ import random, sys, time, math, pygame
 from pygame.locals import *
 import numpy as np
 import copy
-from param import *
+
+from game_param import *
 
 
 wait_time = 1
 
 import os
-os.environ['DISPLAY']
+# os.environ['DISPLAY']
 
 class Pieces(pygame.sprite.Sprite):
     def __init__(self,team,name_num,x,y,sizex,sizey):
