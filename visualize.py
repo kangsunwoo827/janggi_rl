@@ -9,66 +9,16 @@ from pygame.locals import *
 import numpy as np
 import copy
 
-from game_param import *
+from visual_param import *
 
+from game import GameState
 
 wait_time = 1
+Pieces_list = [None,'jol','sa','sang','ma','po','cha','wang']
 
 import os
 # os.environ['DISPLAY']
 
-class Game:
-
-	def __init__(self):		
-		self.currentPlayer = 1
-		self.gameState = GameState(np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int), 1)
-		self.actionSpace = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int)
-		self.pieces = {'1':'X', '0': '-', '-1':'O'}
-		self.grid_shape = (6,7)
-		self.input_shape = (2,6,7)
-		self.name = 'connect4'
-		self.state_size = len(self.gameState.binary)
-		self.action_size = len(self.actionSpace)
-
-	def reset(self):
-		self.gameState = GameState(np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int), 1)
-		self.currentPlayer = 1
-		return self.gameState
-
-	def step(self, action):
-		next_state, value, done = self.gameState.takeAction(action)
-		self.gameState = next_state
-		self.currentPlayer = -self.currentPlayer
-		info = None
-		return ((next_state, value, done, info))
-
-	def identities(self, state, actionValues):
-		identities = [(state,actionValues)]
-
-		currentBoard = state.board
-		currentAV = actionValues
-
-		currentBoard = np.array([
-			  currentBoard[6], currentBoard[5],currentBoard[4], currentBoard[3], currentBoard[2], currentBoard[1], currentBoard[0]
-			, currentBoard[13], currentBoard[12],currentBoard[11], currentBoard[10], currentBoard[9], currentBoard[8], currentBoard[7]
-			, currentBoard[20], currentBoard[19],currentBoard[18], currentBoard[17], currentBoard[16], currentBoard[15], currentBoard[14]
-			, currentBoard[27], currentBoard[26],currentBoard[25], currentBoard[24], currentBoard[23], currentBoard[22], currentBoard[21]
-			, currentBoard[34], currentBoard[33],currentBoard[32], currentBoard[31], currentBoard[30], currentBoard[29], currentBoard[28]
-			, currentBoard[41], currentBoard[40],currentBoard[39], currentBoard[38], currentBoard[37], currentBoard[36], currentBoard[35]
-			])
-
-		currentAV = np.array([
-			currentAV[6], currentAV[5],currentAV[4], currentAV[3], currentAV[2], currentAV[1], currentAV[0]
-			, currentAV[13], currentAV[12],currentAV[11], currentAV[10], currentAV[9], currentAV[8], currentAV[7]
-			, currentAV[20], currentAV[19],currentAV[18], currentAV[17], currentAV[16], currentAV[15], currentAV[14]
-			, currentAV[27], currentAV[26],currentAV[25], currentAV[24], currentAV[23], currentAV[22], currentAV[21]
-			, currentAV[34], currentAV[33],currentAV[32], currentAV[31], currentAV[30], currentAV[29], currentAV[28]
-			, currentAV[41], currentAV[40],currentAV[39], currentAV[38], currentAV[37], currentAV[36], currentAV[35]
-					])
-
-		identities.append((GameState(currentBoard, state.playerTurn), currentAV))
-
-		return identities
 
 class Pieces(pygame.sprite.Sprite):
     def __init__(self,team,name_num,x,y,sizex,sizey):
@@ -94,6 +44,7 @@ class Pieces(pygame.sprite.Sprite):
         DISPLAYSURF.blit(self.scale_image, (self.x, self.y))
         
 class Can_go(pygame.sprite.Sprite):
+    #Cho's turn : +1 , Han's turn : -1 
     def __init__(self,mark,before_y,before_x,gameboard,turn):
         self.marker=mark
         self.before=(before_y,before_x)
@@ -113,44 +64,49 @@ class Can_go(pygame.sprite.Sprite):
             self.in_gung=True
         
         if marker==1:
-            go_list=[[before[0]+(-1)**(self.turn+1),before[1]]
-                        ,[before[0],before[1]-1]
-                        ,[before[0],before[1]+1]]
+            go_list=[
+                    [before[0]-self.turn, before[1]],
+                    [before[0], before[1]-1],
+                    [before[0], before[1]+1]
+                    ]
+
             #궁안에 있으면 대각선 추가 (졸)
             if self.in_gung:
-                go_list.append([before[0]+(-1)**(self.turn+1),before[1]-1])
-                go_list.append([before[0]+(-1)**(self.turn+1),before[1]+1])
+                go_list.append([before[0]-self.turn, before[1]-1])
+                go_list.append([before[0]-self.turn, before[1]+1])
          
         if marker ==2:
-             go_list= [[before[0]+1,before[1]]
-                        ,[before[0]-1,before[1]]
-                        ,[before[0],before[1]-1]
-                        ,[before[0],before[1]+1]
-                        ,[before[0]+1,before[1]+1]
-                        ,[before[0]-1,before[1]-1]
-                        ,[before[0]+1,before[1]-1]
-                        ,[before[0]-1,before[1]+1]]
+             go_list=[
+                    [before[0]+1, before[1]],
+                    [before[0]-1, before[1]],
+                    [before[0], before[1]-1],
+                    [before[0], before[1]+1],
+                    [before[0]+1, before[1]+1],
+                    [before[0]-1, before[1]-1],
+                    [before[0]+1, before[1]-1],
+                    [before[0]-1, before[1]+1]
+                    ]
                 
         if marker ==3:
-            go_list=[[before[0]+3,before[1]+2]
-                        ,[before[0]+2,before[1]+3]
-                        ,[before[0]+3,before[1]-2]
-                        ,[before[0]+2,before[1]-3]
-                        ,[before[0]-3,before[1]+2]
-                        ,[before[0]-2,before[1]+3]
-                        ,[before[0]-3,before[1]-2]
-                        ,[before[0]-2,before[1]-3]]
+            go_list=[[before[0]+3, before[1]+2]
+                        ,[before[0]+2, before[1]+3]
+                        ,[before[0]+3, before[1]-2]
+                        ,[before[0]+2, before[1]-3]
+                        ,[before[0]-3, before[1]+2]
+                        ,[before[0]-2, before[1]+3]
+                        ,[before[0]-3, before[1]-2]
+                        ,[before[0]-2, before[1]-3]]
             
         if marker ==4:
-            go_list=[[before[0]+1,before[1]+2]
-                    ,[before[0]+2,before[1]+1]
-                    ,[before[0]+1,before[1]-2]
-                    ,[before[0]+2,before[1]-1]
-                    ,[before[0]-1,before[1]+2]
-                    ,[before[0]-2,before[1]+1]
-                    ,[before[0]-1,before[1]-2]
-                    ,[before[0]-2,before[1]-1]]
-        
+            go_list=[[before[0]+1, before[1]+2]
+                    ,[before[0]+2, before[1]+1]
+                    ,[before[0]+1, before[1]-2]
+                    ,[before[0]+2, before[1]-1]
+                    ,[before[0]-1, before[1]+2]
+                    ,[before[0]-2, before[1]+1]
+                    ,[before[0]-1, before[1]-2]
+                    ,[before[0]-2, before[1]-1]]
+         
         if marker ==5:
             go_list.append([9,before[1]])
             for i in range(9):
@@ -231,7 +187,7 @@ class Can_go(pygame.sprite.Sprite):
             if l[0]<0 or l[0]>9 or l[1]<0 or l[1]>8:
                 continue
             #같은 팀 말 위로 나가는 거 제외
-            if gameboard[l[0],l[1]]*((-1)**self.turn)>0:
+            if self.turn * gameboard[l[0],l[1]]>0:
                 continue
                 
             #궁밖으로 못나감, 대각선으로 이동할 수 없는 곳이 있음
@@ -380,28 +336,22 @@ class Can_go(pygame.sprite.Sprite):
             expect_gameboard=copy.copy(self.gameboard)
             expect_gameboard[can[0],can[1]]=expect_gameboard[self.before[0],self.before[1]]
             expect_gameboard[self.before[0],self.before[1]]=0
-            king_index=[x[0] for x in np.where(expect_gameboard==(7*((-1)**self.turn)))]
+            king_index=[x[0] for x in np.where(expect_gameboard==(7*self.turn))]
             king_die=False
             
             for i in range(expect_gameboard.shape[0]):
                 for j in range(expect_gameboard.shape[1]):
                     mark=expect_gameboard[i,j]
                     before=(i,j)
-                    if (mark*((-1)**self.turn))<0:
-                        if self.turn:
-                            self.turn=0
-                        else:
-                            self.turn=1
+                    if (mark*self.turn)<0:
+                        self.turn*=(-1)
                             
                         mark=abs(mark)
                         expect_can_list=self.can_go(mark,before,expect_gameboard)
                         if king_index in expect_can_list:
                             king_die=True
                             
-                        if self.turn:
-                            self.turn=0
-                        else:
-                            self.turn=1
+                        self.turn*=(-1)
                 
             if king_die:
                 dangerous.append(can)
@@ -410,13 +360,13 @@ class Can_go(pygame.sprite.Sprite):
     
     def janggoon(self,gameboard):
         expect_gameboard=gameboard
-        king_index=[x[0] for x in np.where(expect_gameboard==(7*((-1)**(self.turn+1))))]
+        king_index=[x[0] for x in np.where(expect_gameboard==7*(-self.turn))]
         king_die=False
         for i in range(expect_gameboard.shape[0]):
                 for j in range(expect_gameboard.shape[1]):
                     mark=expect_gameboard[i,j]
                     before=(i,j)
-                    if (mark*((-1)**self.turn))>0:
+                    if (mark*self.turn)>0:
                         mark=abs(mark)
                         expect_can_list=self.can_go(mark,before,expect_gameboard)
                         if king_index in expect_can_list:
@@ -432,7 +382,7 @@ class Can_go(pygame.sprite.Sprite):
                     self.mark=self.gameboard[i,j]
                     self.before=(i,j)
                     
-                    if (self.mark*((-1)**self.turn))>0:
+                    if (self.mark*self.turn)>0:
                    
                         mark=abs(self.mark)
                         real=self.real_go(mark,self.before,self.gameboard)
@@ -469,9 +419,9 @@ class Can_go(pygame.sprite.Sprite):
             else:
                 real_can_go.append(l)
         return real_can_go
- 
 
-class GameState:
+
+class Visualize:
     def __init__(self,cho_form='mssm',han_form='mssm'):
         #cho_form 의 형태는 'mssm'과 같은 형식 m는 마 s는 상
         global FPS_CLOCK, DISPLAYSURF, BASIC_FONT,NUM_FONT, TITLE_FONT, GAMEOVER_FONT
@@ -484,16 +434,21 @@ class GameState:
 
         pygame.display.set_caption('장기')
 
-        BASIC_FONT = pygame.font.Font('/usr/share/fonts/NanumGothic.ttf', 16)
-        NUM_FONT= pygame.font.Font('/usr/share/fonts/NanumPen.ttf', 20)
-        TITLE_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicBold.ttf', 24)
-        GAMEOVER_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicExtraBold.ttf', 48)
+        # BASIC_FONT = pygame.font.Font('/usr/share/fonts/NanumGothic.ttf', 16)
+        # NUM_FONT= pygame.font.Font('/usr/share/fonts/NanumPen.ttf', 20)
+        # TITLE_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicBold.ttf', 24)
+        # GAMEOVER_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicExtraBold.ttf', 48)
+
+        BASIC_FONT = pygame.font.Font('/Windows/Fonts/nanumgothic.ttf', 16)
+        NUM_FONT= pygame.font.Font('/Windows/Fonts/nanumpen.ttf', 20)
+        TITLE_FONT = pygame.font.Font('/Windows/Fonts/nanumgothicbold.ttf', 24)
+        GAMEOVER_FONT = pygame.font.Font('/Windows/Fonts/nanumgothicextrabold.ttf', 48)
 
         # Set initial parameters
         self.init = False
-        self.num_turn = 0
+        self.num_turn = 1
         self.cho_score=72
-        self.han_score=72
+        self.han_score=73.5
         self.cho_formation,self.han_formation=cho_form,han_form
         self.cho_form,self.han_form=[],[]
         for c in self.cho_formation:
@@ -546,8 +501,8 @@ class GameState:
         self.cho_win = 0
         self.han_win = 0
 
-        # Cho turn: 0, Han turn: 1
-        self.turn = 0
+        # Cho turn: +1, Han turn: -1
+        self.turn = +1
 
         # Cho wins: 1, Han wins: 2, playing: 0
         self.win_index = 0
@@ -616,11 +571,10 @@ class GameState:
                         check_valid_pos = True
                         x_index = i
                         y_index = j
-                        print(i,j)
 
                         # If selected spot is blank or enemy, it is not valid move!
 
-                        if self.gameboard[j, i]*((-1)**self.turn) >0:
+                        if self.gameboard[j, i]*self.turn >0:
                             self.wait_move=True
                             global before_y_index,before_x_index
                             before_y_index=y_index
@@ -628,53 +582,39 @@ class GameState:
                             
         if bool(input_):
             self.wait_move=True
-            if not input_[0][0]:
-                y_index=9
-            else:
-                y_index=input_[0][0]-1
-            x_index=input_[0][1]-1
-            
+            y_index=input_[0][0]
+            x_index=input_[0][1]
             before_y_index=y_index
             before_x_index=x_index
-            self.marker=((-1)**self.turn)*self.gameboard[y_index, x_index]
+            before=(before_y_index,before_x_index)
+            self.marker=self.turn*self.gameboard[y_index, x_index]
             can=Can_go(self.marker,before_y_index,before_x_index,self.gameboard,self.turn)
             can.draw(self.X_coord,self.Y_coord)
-
-            if not input_[1][0]:
-                y_index=9
-            else:
-                y_index=input_[1][0]-1
-            x_index=input_[1][1]-1
-
-            #이동과정
-            if  self.gameboard[y_index,x_index]*((-1)**self.turn) <=0:
-                before=(before_y_index,before_x_index)
-               
-                for can_lst in can.real_go(self.marker,before,self.gameboard):
+            y_index=input_[1][0]
+            x_index=input_[1][1]
+            
+           
+            for can_lst in can.real_go(self.marker,before,self.gameboard):
                     if can_lst==[y_index,x_index]:
                         self.gameboard[y_index,x_index]=self.gameboard[before_y_index,before_x_index]
                         self.gameboard[before_y_index,before_x_index]=0
                         self.janggoon=can.janggoon(self.gameboard)
                         self.wait_move=False
-                        if self.turn:
-                            self.turn=0
-                        else:
-                            self.turn=1   
+                        self.turn*=(-1) 
                         break
-       
-            
+
         # board 움직이기
         
         if self.wait_move: 
             if check_valid_pos:
-                if ((-1)**self.turn)*self.gameboard[y_index, x_index]>0:
-                    self.marker=((-1)**self.turn)*self.gameboard[y_index, x_index]
+                if self.turn*self.gameboard[y_index, x_index]>0:
+                    self.marker=self.turn*self.gameboard[y_index, x_index]
                 
             can=Can_go(self.marker,before_y_index,before_x_index,self.gameboard,self.turn)
             can.draw(self.X_coord,self.Y_coord)
             
             #이동과정
-            if  self.gameboard[y_index,x_index]*((-1)**self.turn) <=0:
+            if  self.gameboard[y_index,x_index]*self.turn <=0:
                 before=(before_y_index,before_x_index)
                
                 for can_lst in can.real_go(self.marker,before,self.gameboard):
@@ -683,10 +623,7 @@ class GameState:
                         self.gameboard[before_y_index,before_x_index]=0
                         self.janggoon=can.janggoon(self.gameboard)
                         self.wait_move=False
-                        if self.turn:
-                            self.turn=0
-                        else:
-                            self.turn=1   
+                        self.turn*=(-1) 
                         break
                 
       
@@ -761,10 +698,6 @@ class GameState:
                     jol=Pieces(Team,1,*Mini)
                     jol.draw()
                         
-#                     pygame.draw.rect(DISPLAYSURF, Mark_Color,
-#                                        [self.X_coord[j]-5, self.Y_coord[i]-10,10,20],
-#                                        0)
-                    
                 elif abs(self.gameboard[i, j]) == 2:
                     if Team==0:
                         self.cho_score+=3
@@ -907,7 +840,7 @@ class GameState:
 
     # Display turn
     def turn_msg(self):
-        if self.turn == 0:
+        if self.turn >0:
             turnSurf = BASIC_FONT.render("Cho's Turn!", True, BLACK)
             turnRect = turnSurf.get_rect()
             turnRect.topleft = (MARGIN, 135)
@@ -936,7 +869,7 @@ class GameState:
         #외통수 확인
         if self.mate:
             time.sleep(wait_time)
-            if self.turn:
+            if self.turn > 0:
                 han_alive=False
                 win_reason='Mate'
             else:
@@ -993,8 +926,9 @@ class GameState:
             self.init = True
             self.__init__()
 
+
 if __name__ == "__main__":
-    game=GameState('mssm','mssm')
-    game.step(((0,2),(8,3)))
+    game=Visualize('mssm','mssm')
+    game.step([[9,0],[7,0]])
     while True:
         game.step()

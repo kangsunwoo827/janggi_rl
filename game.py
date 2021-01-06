@@ -1,13 +1,13 @@
 import numpy as np
 import logging
-from utils import coord_to_action, action_to_coord, can_move
+from utils import form_to_board, coord_to_action, action_to_coord, can_move
 
 #게임 보드판과 턴을 받고 다양한 함수 실행
 #보드판은 row 10에 col9인 array (shape = 10,9 )
 # Cho turn: +1, Han turn: -1
 # No mark: 0, Cho mark: Plus, Han mark = minus
 
-class GameFunction():
+class GameState():
 	def __init__(self, board, num_turn):
 		#홀수면 Cho'turn -> +1
 		if num_turn%2 :
@@ -160,9 +160,12 @@ class GameFunction():
 
 class Game:
 
-	def __init__(self):		
+	def __init__(self,cho_form='mssm',han_form='mssm'):		
 		self.currentPlayer = 1
-		self.gameState = GameState(np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int), 1)
+		formation_cho=form_to_board(cho_form)
+		formation_han=form_to_board(han_form)
+		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
+		self.gameState = GameState(self.init_board, 1)
 		self.actionSpace = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int)
 		self.pieces = {'1':'X', '0': '-', '-1':'O'}
 		self.grid_shape = (6,7)

@@ -15,12 +15,29 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     return logger
 
+
+#formation을 제공하면 board의 반쪽을 만들어주는 함수
+def form_to_board(form):
+    A=self.cho_form[0]
+    B=self.cho_form[1]
+    C=self.cho_form[2]
+    D=self.cho_form[3]
+    Half_board=np.array([
+        [0,0,0,0,0,0,0,0,0],
+        [1,0,1,0,1,0,1,0,1],
+        [0,5,0,0,0,0,0,5,0],
+        [0,0,0,0,7,0,0,0,0],
+        [6,A,B,2,0,2,C,D,6]])
+
+    return Half_board
+  
+
 #장기 좌표 표기법과 array의 index 사이의 변환
 def coord_to_action(coord):
     before=coord[0]
     after=coord[1]
-    action_before=[(before[1]+1)%10, before[0]+1]
-    action_after=[(after[1]+1)%10, after[0]+1]
+    action_before=[(before[0]+1)%10, before[1]+1]
+    action_after=[(after[0]+1)%10, after[1]+1]
 
     return [action_before,action_after]
 
@@ -33,8 +50,8 @@ def action_to_coord(action):
     if not after[0]:
         after[0]=10
 
-    coord_before=[before[1]-1, before[0]-1]
-    coord_after=[after[1]-1, after[0]-1]
+    coord_before=[before[0]-1, before[1]-1]
+    coord_after=[after[0]-1, after[1]-1]
 
     return [coord_before,coord_after]
 
@@ -317,3 +334,40 @@ def can_move(piece,before,gameboard,turn):
 
 
     return can_list
+
+#모든 상황에서의 action space를 내뱉는 함수. 
+#마와 상을 제외하면 모두 상하좌우 움직임이므로 차의 움직임으로 커버할 수 있음.
+#can_move를 이용해서 존재할 수 있는 모든 gameboard 계산
+
+def make_action_space():
+    action_space=[]
+    for x in range(9):
+        for y in range(10):
+            #직선
+            board_lin=np.zeros((10,9))
+            board_lin[y,x]=6
+            before=[y,x]
+            for after in can_move(6,before,board_lin,1):
+                action_space.append([before,after])
+
+            #상
+            board_sang=np.zeros((10,9))
+            board_sang[y,x]=3
+            before=[y,x]
+            for after in can_move(3,before,board_sang,1):
+                action_space.append([before,after])
+
+            #마
+            board_ma=np.zeros((10,9))
+            board_ma[y,x]=4
+            before=[y,x]
+            for after in can_move(4,before,board_ma,1):
+                action_space.append([before,after])
+    
+    #coord-> action
+    action_space=[coord_to_action(coord) for coord in action_space]
+
+    return action_space
+            
+
+
