@@ -3,7 +3,6 @@
 #이 파일에서 정의된 것
 #1) Pieces 클래스 . 장기 알을 의미
 #2) Can_go 클래스. 장기 알이 이동가능한지 표시하는 걸 의미
-#3) Gamestate 클래스. 게임을 총 관리하는 클래스
 import random, sys, time, math, pygame
 from pygame.locals import *
 import numpy as np
@@ -11,7 +10,7 @@ import copy
 
 from visual_param import *
 
-from game import GameState,Game
+from game import GameState
 
 wait_time = 1
 Pieces_list = [None,'jol','sa','sang','ma','po','cha','wang']
@@ -422,7 +421,7 @@ class Can_go(pygame.sprite.Sprite):
 
 
 class Visualize:
-    def __init__(self,GameState,cho_form='mssm',han_form='mssm'):
+    def __init__(self,cho_form='mssm',han_form='mssm'):
         #cho_form 의 형태는 'mssm'과 같은 형식 m는 마 s는 상
         global FPS_CLOCK, DISPLAYSURF, BASIC_FONT,NUM_FONT, TITLE_FONT, GAMEOVER_FONT
 
@@ -446,34 +445,67 @@ class Visualize:
 
         # Set initial parameters
         self.init = False
-        self.gameState=GameState
-        self.num_turn = self.gameState.num_turn
-        # Cho turn: +1, Han turn: -1
-        self.turn = self.gameState.playerTurn
-
-        if self.turn>0:
-            self.cho_score=self.gameState.playerScore
-            self.han_score=self.gameState.oppoScore
-        else:
-            self.cho_score=self.gameState.oppoScore
-            self.han_score=self.gameState.playerScore
-
-        self.cho_formation, self.han_formation=cho_form, han_form
+        self.num_turn = 1
+        self.cho_score=72
+        self.han_score=73.5
+        self.cho_formation,self.han_formation=cho_form,han_form
+        self.cho_form,self.han_form=[],[]
+        for c in self.cho_formation:
+            if c=='m':
+                self.cho_form.append(4)
+            else:
+                self.cho_form.append(3)
+        
+        for h in self.han_formation:
+            if h=='m':
+                self.han_form.append(4)
+            else:
+                self.han_form.append(3)
+       
     
-        # No mark: 0, Cho mark: Plus, Han mark = minus
-        # 병 1 사 2 상 3 마 4 포 5 차 6 왕7
-    
-        self.gameboard=self.gameState.board
-
-        # Cho wins: +1, Han wins: -1, playing: 0
-        self.win_index = self.gameState.who_win
-
         self.janggoon=False
         self.mate=False
         self.can_go=None
         self.wait_move=False
         self.marker=0
         
+        # No mark: 0, Cho mark: Plus, Han mark = minus
+        # 병 1 사 2 상 3 마 4 포 5 차 6 왕7
+       
+       
+        A=self.cho_form[0]
+        B=self.cho_form[1]
+        C=self.cho_form[2]
+        D=self.cho_form[3]
+        formation_cho=np.array([[0,0,0,0,0,0,0,0,0],
+                                [1,0,1,0,1,0,1,0,1],
+                                [0,5,0,0,0,0,0,5,0],
+                                [0,0,0,0,7,0,0,0,0],
+                                [6,A,B,2,0,2,C,D,6]])
+        
+        a=self.han_form[0]
+        b=self.han_form[1]
+        c=self.han_form[2]
+        d=self.han_form[3]
+        formation_han=np.array([[0,0,0,0,0,0,0,0,0],
+                                [1,0,1,0,1,0,1,0,1],
+                                [0,5,0,0,0,0,0,5,0],
+                                [0,0,0,0,7,0,0,0,0],
+                                [6,a,b,2,0,2,c,d,6]])
+    
+      
+        self.base_gameboard=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
+        self.gameboard=self.base_gameboard
+
+        self.cho_win = 0
+        self.han_win = 0
+
+        # Cho turn: +1, Han turn: -1
+        self.turn = +1
+
+        # Cho wins: 1, Han wins: 2, playing: 0
+        self.win_index = 0
+
         # List of X coordinates and Y coordinates
         self.X_coord = []
         self.Y_coord = []
@@ -486,17 +518,114 @@ class Visualize:
             self.Y_coord.append(
                 TOP_MARGIN + i *int(GRID_SIZE / (POINT_HEIGHT-1)))
 
+            
+#   Game loop
+    def step(self,input_=False):
+        #input의 형태는 ((a,b),(c,d)) a,b의 말을 c,d로 옮겨라
+
+        pygame.display.update()
+        
+              # Initial settings
+        if self.init == True:
+            self.num_turn = 0
+
+            # No mark: 0, o: 1, x = -1
+            self.gameboard = self.base_gameboard
+            
+            # Reset init
+            self.init = False
+            
         # Fill background color
         DISPLAYSURF.fill(BACK)
 
         # Draw board
         self.draw_main_board(self.X_coord,self.Y_coord)
+   
+        #check the mate
+        check=Can_go(self.marker,0,0,self.gameboard,self.turn)
+        self.mate=check.mate()
         
+        # Key settings
+        mouse_pos = 0
         
         for event in pygame.event.get():  # event loop
             if event.type == QUIT:
                 self.terminate()
 
+            if pygame.mouse.get_pressed()[0]:
+                mouse_pos = pygame.mouse.get_pos()
+
+        # Check mouse position and count
+        check_valid_pos = False
+        x_index = -1
+        y_index = -1
+        
+        #mouse_pos 받기
+        
+
+        if mouse_pos != 0 :
+            for i in range(len(self.X_coord)):
+                for j in range(len(self.Y_coord)):
+                    if  (self.X_coord[i] - 15 < mouse_pos[0] < self.X_coord[i] + 15) and (self.Y_coord[j] - 15 < mouse_pos[1] < self.Y_coord[j] + 15):
+                        check_valid_pos = True
+                        x_index = i
+                        y_index = j
+
+                        # If selected spot is blank or enemy, it is not valid move!
+
+                        if self.gameboard[j, i]*self.turn >0:
+                            self.wait_move=True
+                            global before_y_index,before_x_index
+                            before_y_index=y_index
+                            before_x_index=x_index
+                            
+        if bool(input_):
+            self.wait_move=True
+            y_index=input_[0][0]
+            x_index=input_[0][1]
+            before_y_index=y_index
+            before_x_index=x_index
+            before=(before_y_index,before_x_index)
+            self.marker=self.turn*self.gameboard[y_index, x_index]
+            can=Can_go(self.marker,before_y_index,before_x_index,self.gameboard,self.turn)
+            can.draw(self.X_coord,self.Y_coord)
+            y_index=input_[1][0]
+            x_index=input_[1][1]
+            
+           
+            for can_lst in can.real_go(self.marker,before,self.gameboard):
+                    if can_lst==[y_index,x_index]:
+                        self.gameboard[y_index,x_index]=self.gameboard[before_y_index,before_x_index]
+                        self.gameboard[before_y_index,before_x_index]=0
+                        self.janggoon=can.janggoon(self.gameboard)
+                        self.wait_move=False
+                        self.turn*=(-1) 
+                        break
+
+        # board 움직이기
+        
+        if self.wait_move: 
+            if check_valid_pos:
+                if self.turn*self.gameboard[y_index, x_index]>0:
+                    self.marker=self.turn*self.gameboard[y_index, x_index]
+                
+            can=Can_go(self.marker,before_y_index,before_x_index,self.gameboard,self.turn)
+            can.draw(self.X_coord,self.Y_coord)
+            
+            #이동과정
+            if  self.gameboard[y_index,x_index]*self.turn <=0:
+                before=(before_y_index,before_x_index)
+               
+                for can_lst in can.real_go(self.marker,before,self.gameboard):
+                    if can_lst==[y_index,x_index]:
+                        self.gameboard[y_index,x_index]=self.gameboard[before_y_index,before_x_index]
+                        self.gameboard[before_y_index,before_x_index]=0
+                        self.janggoon=can.janggoon(self.gameboard)
+                        self.wait_move=False
+                        self.turn*=(-1) 
+                        break
+                
+      
 
         # Display Information
         self.title_msg()
@@ -509,13 +638,11 @@ class Visualize:
         self.turn_msg()
 
         # Check_win 0: playing, 1: cho win, 2: han win
+        self.win_index = self.check_win()
         self.display_win(self.win_index)
-            
-#   Game loop
-    def show(self,newState):
-        self.__init__(newState)
-        pygame.display.update()
     
+        return self.gameboard, check_valid_pos, self.win_index, self.turn
+
     # Exit the game
     def terminate(self):
         pygame.quit()
@@ -546,6 +673,7 @@ class Visualize:
 
         # No mark: 0, Cho mark: Plus, Han mark = minus
         # 병 1 사 2 상 3 마 4 포 5 차 6 왕7
+        self.cho_score,self.han_score=0,0
         
         for i in range(self.gameboard.shape[0]):
             for j in range(self.gameboard.shape[1]):
@@ -562,35 +690,56 @@ class Visualize:
                       ,int(1.2*CELL_SIZE),int(1.2*CELL_SIZE))
                 
                 if abs(self.gameboard[i, j]) == 1:
-                    
+                    if Team==0:
+                        self.cho_score+=2
+                    else:
+                        self.han_score+=2
                     jol=Pieces(Team,1,*Mini)
                     jol.draw()
                         
                 elif abs(self.gameboard[i, j]) == 2:
-                   
+                    if Team==0:
+                        self.cho_score+=3
+                    else:
+                        self.han_score+=3
+      
                     sa=Pieces(Team,2,*Mini)
                     sa.draw()
                         
                 elif abs(self.gameboard[i, j]) == 3:
-                    
+                    if Team==0:
+                        self.cho_score+=3
+                    else:
+                        self.han_score+=3
               
                     sang=Pieces(Team,3,*Middle)
                     sang.draw()
                         
                     
                 elif abs(self.gameboard[i, j]) == 4:
-                   
+                    if Team==0:
+                        self.cho_score+=5
+                    else:
+                        self.han_score+=5
                         
                     ma=Pieces(Team,4,*Middle)
                     ma.draw()
                         
                 elif abs(self.gameboard[i, j]) == 5:
+                    if Team==0:
+                        self.cho_score+=7
+                    else:
+                        self.han_score+=7
                    
                     po=Pieces(Team,5,*Middle)
                     po.draw()
                         
                 
                 elif abs(self.gameboard[i, j]) == 6:
+                    if Team==0:
+                        self.cho_score+=13
+                    else:
+                        self.han_score+=13
                     
                     cha=Pieces(Team,6,*Middle)
                     cha.draw()
@@ -681,7 +830,7 @@ class Visualize:
         scoreRect1.topleft = (MARGIN, 80)
         DISPLAYSURF.blit(scoreSurf1, scoreRect1)
 
-        scoreSurf2 = BASIC_FONT.render(str(self.cho_score) + 'pt      '+str(self.han_score)+'pt',
+        scoreSurf2 = BASIC_FONT.render(str(self.cho_score) + 'pt       '+str(self.han_score)+'pt',
                                        True, BLACK)
         scoreRect2 = scoreSurf2.get_rect()
         scoreRect2.topleft = (MARGIN, 105)
@@ -690,10 +839,6 @@ class Visualize:
 
     # Display turn
     def turn_msg(self):
-        num_turnSurf = BASIC_FONT.render(str(self.num_turn), True, BLACK)
-        num_turnRect = num_turnSurf.get_rect()
-        num_turnRect.center = (HALF_WINDOW_WIDTH, 135)
-        DISPLAYSURF.blit(num_turnSurf, num_turnRect)
         if self.turn >0:
             turnSurf = BASIC_FONT.render("Cho's Turn!", True, BLACK)
             turnRect = turnSurf.get_rect()
@@ -704,6 +849,38 @@ class Visualize:
             turnRect = turnSurf.get_rect()
             turnRect.topleft = (WINDOW_WIDTH - 120, 135)
             DISPLAYSURF.blit(turnSurf, turnRect)
+
+    # Check win
+    def check_win(self):
+        # 왕이 있나 확인
+        global win_reason
+        win_reason=''
+        cho_alive=True
+        han_alive=True
+   
+        if self.cho_score<10:
+            cho_alive=False
+            win_reason='Score Loss'
+        if self.han_score<10:
+            han_alive=False
+            win_reason='Score Loss'
+        
+        #외통수 확인
+        if self.mate:
+            time.sleep(wait_time)
+            if self.turn > 0:
+                han_alive=False
+                win_reason='Mate'
+            else:
+                cho_alive=False
+                win_reason='Mate'
+            
+        if cho_alive and han_alive:
+            return 0
+        elif not cho_alive:
+            return 2
+        elif not han_alive:
+            return 1
       
         
 
@@ -723,29 +900,34 @@ class Visualize:
                 winRect = winSurf.get_rect()
                 winRect.midtop = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 50)
                 DISPLAYSURF.blit(winSurf, winRect)
+                self.cho_win += 1
                 
 
             # han Win
-            if win_index == -1:
+            if win_index == 2:
                 # Fill background color
                 DISPLAYSURF.fill(RED)
                 winSurf = GAMEOVER_FONT.render("han Win!", True, BLACK)
                 winRect = winSurf.get_rect()
                 winRect.midtop = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 50)
                 DISPLAYSURF.blit(winSurf, winRect)
+                self.han_win += 1
               
 
 
+            reasonSurf = TITLE_FONT.render(win_reason, True, BLACK)
+            reasonRect = reasonSurf.get_rect()
+            reasonRect.midtop = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+            DISPLAYSURF.blit(reasonSurf, reasonRect)
            
 
             time.sleep(wait_time)
             self.init = True
-            # self.__init__()
+            self.__init__()
 
 
 if __name__ == "__main__":
-    game=Game('mssm','mssm')
-    window=Visualize(game)
+    game=Visualize('mssm','mssm')
+    game.step([[9,0],[7,0]])
     while True:
-        window.show()
-        
+        game.step()

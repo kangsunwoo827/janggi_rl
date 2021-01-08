@@ -18,16 +18,21 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 #formation을 제공하면 board의 반쪽을 만들어주는 함수
 def form_to_board(form):
-    A=self.cho_form[0]
-    B=self.cho_form[1]
-    C=self.cho_form[2]
-    D=self.cho_form[3]
+    formation_lst=[4 if s=='m' else 3 for s in form] 
+    
+
+    A=formation_lst[0]
+    B=formation_lst[1]
+    C=formation_lst[2]
+    D=formation_lst[3]
+
     Half_board=np.array([
         [0,0,0,0,0,0,0,0,0],
         [1,0,1,0,1,0,1,0,1],
         [0,5,0,0,0,0,0,5,0],
         [0,0,0,0,7,0,0,0,0],
-        [6,A,B,2,0,2,C,D,6]])
+        [6,A,B,2,0,2,C,D,6]],
+        dtype=np.int32)
 
     return Half_board
   

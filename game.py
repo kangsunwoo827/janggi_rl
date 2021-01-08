@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from utils import form_to_board, coord_to_action, action_to_coord, can_move
+from utils import form_to_board, coord_to_action, action_to_coord, can_move, make_action_space
 
 #게임 보드판과 턴을 받고 다양한 함수 실행
 #보드판은 row 10에 col9인 array (shape = 10,9 )
@@ -30,7 +30,7 @@ class GameState():
 		self.id = self._convertStateToId()
 		self.score = self._getScore()
 		self.allowedActions = self._allowedActions()
-		self.isEndGame = self._checkForEndGame()
+		self.isEndGame,self.who_win = self._checkForEndGame()
 		# self.value = self._getValue()
 
 
@@ -81,38 +81,33 @@ class GameState():
 	#게임이 끝났는지 확인
 	def _checkForEndGame(self):
 		isEnd=False
-		
+		who_win=0
+
 		#본인의 왕이 죽었다면 게임 끝 (패배)
 		king_position=np.isin(self.board,7*self.playerTurn)
-		if np.any(king_position):
+		if not np.any(king_position):
+			print('king_die')
 			isEnd=True
 			who_win= -self.playerTurn
 
 		playerScore,oppoScore=self.score
 		#본인의 점수가 10점보다 적다면 게임 끝 (패배)
 		if playerScore<10:
+			print('score<10')
 			isEnd=True
 			who_win= -self.playerTurn
 		
 
 		#200턴안에 안끝나면 종료
 		if self.num_turn > 200:
+			print('turn>200')
 			isEnd=True
 			if playerScore>oppoScore :
 				who_win=self.playerTurn
 			else:
-				who_win= -self.playerTurn
+				who_win= -self.playerTurn		
 
 		return isEnd,who_win
-
-
-	# def _getValue(self):
-	# 	# This is the value of the state for the current player
-	# 	# i.e. if the previous player played a winning move, you lose
-	# 	for x,y,z,a in self.winners:
-	# 		if (self.board[x] + self.board[y] + self.board[z] + self.board[a] == 4 * -self.playerTurn):
-	# 			return (-1, -1, 1)
-	# 	return (0, 0, 0)
 
 
 	def _getScore(self): 
@@ -131,86 +126,95 @@ class GameState():
 
 	#action을 주면 action을 취한 상태의 state 반환
 	def takeAction(self, action):
-		coord=coord_to_action(action)
+		coord=action_to_coord(action)
 		before=coord[0]
 		after=coord[1]
 		newBoard = self.board
-		newBoard[after]=newBoard[before]
-		newBoard[before]=0
-		newState = GameState(newBoard, -self.playerTurn)
+		newBoard[after[0],after[1]]=newBoard[before[0],before[1]]
+		newBoard[before[0],before[1]]=0
+		newState = GameState(newBoard, self.num_turn+1)
 
 		value = 0
 		done = 0
 
 		if newState.isEndGame:
-			value = newState.value[0]
+			#winner and turn is same      -> +1
+			#winner and turn is different -> -1
+			value = newState.who_win * newState.playerTurn
 			done = 1
 
 		return (newState, value, done) 
 
 
- 
-
 	def render(self, logger):
 		for row in self.board:
 			logger.info([self.pieces[cell] for cell in row])
 		logger.info('--------------')
+	
 
 
 
 class Game:
 
 	def __init__(self,cho_form='mssm',han_form='mssm'):		
-		self.currentPlayer = 1
+		self.cho_form=cho_form
+		self.han_form=han_form
+		formation_cho=form_to_board(self.cho_form)
+		formation_han=form_to_board(self.han_form)
+		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
+		self.num_turn=1
+		self.gameState = GameState(self.init_board, self.num_turn)
+		
+		self.currentPlayer = self.gameState.playerTurn
+		self.actionSpace = np.array(make_action_space())
+		self.pieces = [None,'졸','사','상','마','포','차','왕']
+		self.grid_shape = (10,9)
+		self.input_shape = (14,10,9)
+		self.name = 'janggi'
+		self.state_size = len(self.gameState.BoardToArray)
+		self.action_size = len(self.actionSpace)
+
+	def reset(self,cho_form='mssm',han_form='mssm'):
+		self.num_turn=1
 		formation_cho=form_to_board(cho_form)
 		formation_han=form_to_board(han_form)
 		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
 		self.gameState = GameState(self.init_board, 1)
-		self.actionSpace = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int)
-		self.pieces = {'1':'X', '0': '-', '-1':'O'}
-		self.grid_shape = (6,7)
-		self.input_shape = (2,6,7)
-		self.name = 'janggi'
-		self.state_size = len(self.gameState.binary)
-		self.action_size = len(self.actionSpace)
-
-	def reset(self):
-		self.gameState = GameState(np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], dtype=np.int), 1)
-		self.currentPlayer = 1
 		return self.gameState
 
 	def step(self, action):
 		next_state, value, done = self.gameState.takeAction(action)
 		self.gameState = next_state
-		self.currentPlayer = -self.currentPlayer
+		
 		info = None
 		return ((next_state, value, done, info))
 
+	
 
-	def identities(self, state, actionValues):
-		identities = [(state,actionValues)]
+	# def identities(self, state, actionValues):
+	# 	identities = [(state,actionValues)]
 
-		currentBoard = state.board
-		currentAV = actionValues
+	# 	currentBoard = state.board
+	# 	currentAV = actionValues
 
-		currentBoard = np.array([
-			  currentBoard[6], currentBoard[5],currentBoard[4], currentBoard[3], currentBoard[2], currentBoard[1], currentBoard[0]
-			, currentBoard[13], currentBoard[12],currentBoard[11], currentBoard[10], currentBoard[9], currentBoard[8], currentBoard[7]
-			, currentBoard[20], currentBoard[19],currentBoard[18], currentBoard[17], currentBoard[16], currentBoard[15], currentBoard[14]
-			, currentBoard[27], currentBoard[26],currentBoard[25], currentBoard[24], currentBoard[23], currentBoard[22], currentBoard[21]
-			, currentBoard[34], currentBoard[33],currentBoard[32], currentBoard[31], currentBoard[30], currentBoard[29], currentBoard[28]
-			, currentBoard[41], currentBoard[40],currentBoard[39], currentBoard[38], currentBoard[37], currentBoard[36], currentBoard[35]
-			])
+	# 	currentBoard = np.array([
+	# 		  currentBoard[6], currentBoard[5],currentBoard[4], currentBoard[3], currentBoard[2], currentBoard[1], currentBoard[0]
+	# 		, currentBoard[13], currentBoard[12],currentBoard[11], currentBoard[10], currentBoard[9], currentBoard[8], currentBoard[7]
+	# 		, currentBoard[20], currentBoard[19],currentBoard[18], currentBoard[17], currentBoard[16], currentBoard[15], currentBoard[14]
+	# 		, currentBoard[27], currentBoard[26],currentBoard[25], currentBoard[24], currentBoard[23], currentBoard[22], currentBoard[21]
+	# 		, currentBoard[34], currentBoard[33],currentBoard[32], currentBoard[31], currentBoard[30], currentBoard[29], currentBoard[28]
+	# 		, currentBoard[41], currentBoard[40],currentBoard[39], currentBoard[38], currentBoard[37], currentBoard[36], currentBoard[35]
+	# 		])
 
-		currentAV = np.array([
-			currentAV[6], currentAV[5],currentAV[4], currentAV[3], currentAV[2], currentAV[1], currentAV[0]
-			, currentAV[13], currentAV[12],currentAV[11], currentAV[10], currentAV[9], currentAV[8], currentAV[7]
-			, currentAV[20], currentAV[19],currentAV[18], currentAV[17], currentAV[16], currentAV[15], currentAV[14]
-			, currentAV[27], currentAV[26],currentAV[25], currentAV[24], currentAV[23], currentAV[22], currentAV[21]
-			, currentAV[34], currentAV[33],currentAV[32], currentAV[31], currentAV[30], currentAV[29], currentAV[28]
-			, currentAV[41], currentAV[40],currentAV[39], currentAV[38], currentAV[37], currentAV[36], currentAV[35]
-					])
+	# 	currentAV = np.array([
+	# 		currentAV[6], currentAV[5],currentAV[4], currentAV[3], currentAV[2], currentAV[1], currentAV[0]
+	# 		, currentAV[13], currentAV[12],currentAV[11], currentAV[10], currentAV[9], currentAV[8], currentAV[7]
+	# 		, currentAV[20], currentAV[19],currentAV[18], currentAV[17], currentAV[16], currentAV[15], currentAV[14]
+	# 		, currentAV[27], currentAV[26],currentAV[25], currentAV[24], currentAV[23], currentAV[22], currentAV[21]
+	# 		, currentAV[34], currentAV[33],currentAV[32], currentAV[31], currentAV[30], currentAV[29], currentAV[28]
+	# 		, currentAV[41], currentAV[40],currentAV[39], currentAV[38], currentAV[37], currentAV[36], currentAV[35]
+	# 				])
 
-		identities.append((GameState(currentBoard, state.playerTurn), currentAV))
+	# 	identities.append((GameState(currentBoard, state.playerTurn), currentAV))
 
-		return identities
+	# 	return identities

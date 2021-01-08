@@ -2,7 +2,8 @@
 # %matplotlib inline
 # %load_ext autoreload
 # %autoreload 2
-
+import keras
+# from keras.utils import plot_model
 import numpy as np
 np.set_printoptions(suppress=True)
 
@@ -11,9 +12,9 @@ import random
 from importlib import reload
 
 
-from keras.utils import plot_model
 
-from jang_env import Game, GameState
+
+from game import Game, GameState
 from agent import Agent
 from memory import Memory
 from model import Residual_CNN
