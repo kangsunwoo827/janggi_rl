@@ -2,7 +2,7 @@ import numpy as np
 import logging
 import config
 
-# from utils import setup_logger
+from utils import setup_logger,action_to_message
 import loggers as lg
 
 class Node():
@@ -75,25 +75,29 @@ class MCTS():
 				Nb = Nb + edge.stats['N']
 
 			for idx, (action, edge) in enumerate(currentNode.edges):
-
+				#U=exploration			
+				
 				U = self.cpuct * \
 					((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )  * \
 					np.sqrt(Nb) / (1 + edge.stats['N'])
 					
 				Q = edge.stats['Q']
+				
 
-				lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-					, action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )
-					, np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
+				# lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
+				# 	, action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )
+				# 	, np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
 
 				if Q + U > maxQU:
 					maxQU = Q + U
 					simulationAction = action
+					action_message = action_to_message(currentNode.state,action)
 					simulationEdge = edge
 
-			lg.logger_mcts.info('action with highest Q + U...%d', simulationAction)
-
+			lg.logger_mcts.info('action with highest Q + U...%s', action_message)
+	
 			newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
+			print(done)
 			currentNode = simulationEdge.outNode
 			breadcrumbs.append(simulationEdge)
 

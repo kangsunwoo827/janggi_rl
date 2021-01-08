@@ -11,7 +11,7 @@ import copy
 
 from visual_param import *
 
-from game import GameState,Game
+# from game import GameState,Game
 
 wait_time = 1
 Pieces_list = [None,'jol','sa','sang','ma','po','cha','wang']

@@ -47,6 +47,8 @@ def coord_to_action(coord):
     return [action_before,action_after]
 
 def action_to_coord(action):
+    print('action')
+    print(action)
     before=action[0]
     after=action[1]
     
@@ -373,6 +375,18 @@ def make_action_space():
     action_space=[coord_to_action(coord) for coord in action_space]
 
     return action_space
-            
+
+
+def action_to_message(state,action):
+    coord=action_to_coord(action)
+    before=coord[0]
+    after=coord[1]
+    board=state.board
+    piece=abs(board[after[0],after[1]])
+    piece=state.pieces[piece]
+    message=str(action[0])+piece+str(action[1])
+
+    return message
+
 
 

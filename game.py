@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from utils import form_to_board, coord_to_action, action_to_coord, can_move, make_action_space
-
+from visualize import Visualize
 #게임 보드판과 턴을 받고 다양한 함수 실행
 #보드판은 row 10에 col9인 array (shape = 10,9 )
 # Cho turn: +1, Han turn: -1
@@ -18,7 +18,7 @@ class GameState():
 		self.num_turn=num_turn
 		self.pieces = [None,'졸','사','상','마','포','차','왕']
 		self.score_lst=[0,2,3,3,5,7,13,0]
-		self.board_memory=np.array((6,10,9))
+		self.board_memory=np.zeros((6,10,9))
 
 		self.playerScore=0
 		self.oppoScore=0
@@ -61,6 +61,12 @@ class GameState():
 		allowed=[coord_to_action(coord) for coord in allowed]
 
 		return allowed
+
+	def check_turn(self):
+		if self.num_turn%2 :
+			self.playerTurn=+1
+		else:
+			self.playerTurn=-1
 
 	#state를 position array들로 변환 
 	def _convertBoardToArr(self):
@@ -130,7 +136,11 @@ class GameState():
 		self.board_memory[-1]=self.board
 
 	def check_repetition(self,allowedCoord):
-		if self.board_memory[0]==self.board_memory[4] and self.board_memory[1]==self.board_memory[5] and self.board_memory[2]==self.board:
+		if (
+			np.all(self.board_memory[0]==self.board_memory[4])
+		 and np.all(self.board_memory[1]==self.board_memory[5])
+		  and np.all(self.board_memory[2]==self.board)
+		  ):
 			for coord in allowedCoord:
 				dummy_board=self.board
 				before=allowedCoord[0]
@@ -146,9 +156,9 @@ class GameState():
 
 	#action을 주면 action을 취한 상태의 state 와 value 등을 반환
 	def takeAction(self, action):
+		self.check_turn
 		#memory_board
 		self.memorize_board()
-
 		coord=action_to_coord(action)
 		before=coord[0]
 		after=coord[1]
@@ -156,6 +166,8 @@ class GameState():
 		newBoard[after[0],after[1]]=newBoard[before[0],before[1]]
 		newBoard[before[0],before[1]]=0
 		newState = GameState(newBoard, self.num_turn+1)
+	
+		
 
 		value = 0
 		done = 0
@@ -166,13 +178,18 @@ class GameState():
 			value = newState.who_win * newState.playerTurn
 			done = 1
 
+		state=self
+		window=Visualize(state)	
+		window.show(state)
 		return (newState, value, done) 
 
 
 	def render(self, logger):
+
 		for row in self.board:
 			logger.info([self.pieces[cell] for cell in row])
 		logger.info('--------------')
+		
 	
 
 
@@ -192,7 +209,7 @@ class Game:
 		self.actionSpace = np.array(make_action_space())
 		self.pieces = [None,'졸','사','상','마','포','차','왕']
 		self.grid_shape = (10,9)
-		self.input_shape = (14,10,9)
+		self.input_shape = None
 		self.name = 'janggi'
 		self.state_size = len(self.gameState.BoardToArray)
 		self.action_size = len(self.actionSpace)
@@ -209,6 +226,9 @@ class Game:
 		next_state, value, done = self.gameState.takeAction(action)
 		self.gameState = next_state
 		
+		state=self.gameState
+		window=Visualize(state)	
+		window.show(state)
 		info = None
 		return ((next_state, value, done, info))
 

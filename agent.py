@@ -12,7 +12,7 @@ import time
 import matplotlib.pyplot as plt
 from IPython import display
 import pylab as pl
-
+from utils import make_action_space
 
 class User():
 	def __init__(self, name, state_size, action_size):
@@ -106,36 +106,39 @@ class Agent():
 		inputToModel = np.array([self.model.convertToModelInput(state)])
 
 		preds = self.model.predict(inputToModel)
+		
 		value_array = preds[0]
 		logits_array = preds[1]
 		value = value_array[0]
 
 		logits = logits_array[0]
-
+		action_space=make_action_space()
 		allowedActions = state.allowedActions
-
+		allowed_idx=[]
+		for allowed in allowedActions:
+			allowed_idx.append(action_space.index(allowed))
 		mask = np.ones(logits.shape,dtype=bool)
-		mask[allowedActions] = False
+		mask[allowed_idx] = False
+	
 		logits[mask] = -100
 
 		#SOFTMAX
 		odds = np.exp(logits)
 		probs = odds / np.sum(odds) ###put this just before the for?
 
-		return ((value, probs, allowedActions))
+		return ((value, probs, allowed_idx,allowedActions))
 
 
 	def evaluateLeaf(self, leaf, value, done, breadcrumbs):
 
 		lg.logger_mcts.info('------EVALUATING LEAF------')
-
 		if done == 0:
 	
-			value, probs, allowedActions = self.get_preds(leaf.state)
+			value, probs, allowed_idx,allowedActions = self.get_preds(leaf.state)
 			lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
-			probs = probs[allowedActions]
-
+			
+			probs =probs [allowed_idx]
 			for idx, action in enumerate(allowedActions):
 				newState, _, _ = leaf.state.takeAction(action)
 				if newState.id not in self.mcts.tree:
@@ -145,10 +148,10 @@ class Agent():
 				else:
 					node = self.mcts.tree[newState.id]
 					lg.logger_mcts.info('existing node...%s...', node.id)
-
+				
 				newEdge = mc.Edge(leaf, node, probs[idx], action)
 				leaf.edges.append((action, newEdge))
-				
+			
 		else:
 			lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, value)
 
@@ -161,9 +164,9 @@ class Agent():
 		pi = np.zeros(self.action_size, dtype=np.integer)
 		values = np.zeros(self.action_size, dtype=np.float32)
 		
-		for action, edge in edges:
-			pi[action] = pow(edge.stats['N'], 1/tau)
-			values[action] = edge.stats['Q']
+		for idx, (action, edge) in enumerate(edges):
+			pi[idx] = pow(edge.stats['N'], 1/tau)
+			values[idx] = edge.stats['Q']
 
 		pi = pi / (np.sum(pi) * 1.0)
 		return pi, values
