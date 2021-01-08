@@ -2,7 +2,7 @@
 # %matplotlib inline
 # %load_ext autoreload
 # %autoreload 2
-import keras
+
 # from keras.utils import plot_model
 import numpy as np
 np.set_printoptions(suppress=True)
@@ -66,7 +66,7 @@ else:
 
 #copy the config file to the run folder
 copyfile('./config.py', run_folder + 'config.py')
-plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
+# plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
 
 print('\n')
 

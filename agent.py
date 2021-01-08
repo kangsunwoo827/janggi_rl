@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 import MCTS as mc
-from jang_env import GameState
+from game import GameState
 from loss import softmax_cross_entropy_with_logits
 
 import config

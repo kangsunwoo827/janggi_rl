@@ -18,6 +18,7 @@ class GameState():
 		self.num_turn=num_turn
 		self.pieces = [None,'졸','사','상','마','포','차','왕']
 		self.score_lst=[0,2,3,3,5,7,13,0]
+		self.board_memory=np.array((6,10,9))
 
 		self.playerScore=0
 		self.oppoScore=0
@@ -31,8 +32,6 @@ class GameState():
 		self.score = self._getScore()
 		self.allowedActions = self._allowedActions()
 		self.isEndGame,self.who_win = self._checkForEndGame()
-		# self.value = self._getValue()
-
 
 
 	#Action 중 가능한 Action return
@@ -57,6 +56,7 @@ class GameState():
 
 				allowed.append([before,after])
 
+		allowed=self.check_repetition(allowed)
 		#coord 형태로 되어있기 때문에 action 형태로 변환
 		allowed=[coord_to_action(coord) for coord in allowed]
 
@@ -123,9 +123,32 @@ class GameState():
 		return self.playerScore, self.oppoScore
 
 
+	#ban repetition
+	def memorize_board(self):
+		for i in range(len(self.board_memory)-1):
+			self.board_memory[i]=self.board_memory[i+1]
+		self.board_memory[-1]=self.board
 
-	#action을 주면 action을 취한 상태의 state 반환
+	def check_repetition(self,allowedCoord):
+		if self.board_memory[0]==self.board_memory[4] and self.board_memory[1]==self.board_memory[5] and self.board_memory[2]==self.board:
+			for coord in allowedCoord:
+				dummy_board=self.board
+				before=allowedCoord[0]
+				after=allowedCoord[1]
+				dummy_board[after[0],after[1]]=dummy_board[before[0],before[1]]
+				dummy_board[before[0],before[1]]=0
+				
+				if dummy_board==self.board_memory[3]:
+					allowedCoord.remove(coord)
+		return allowedCoord
+
+
+
+	#action을 주면 action을 취한 상태의 state 와 value 등을 반환
 	def takeAction(self, action):
+		#memory_board
+		self.memorize_board()
+
 		coord=action_to_coord(action)
 		before=coord[0]
 		after=coord[1]
