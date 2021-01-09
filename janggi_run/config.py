@@ -3,7 +3,7 @@ EPISODES = 30
 MCTS_SIMS = 50
 MEMORY_SIZE = 30000
 TURNS_UNTIL_TAU0 = 10 # turn on which it starts playing deterministically
-CPUCT = 1
+CPUCT = 1 #A hyperparameter determining the level of exploration.
 EPSILON = 0.2
 ALPHA = 0.8
 

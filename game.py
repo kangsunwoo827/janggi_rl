@@ -6,11 +6,47 @@ from visualize import Visualize
 #보드판은 row 10에 col9인 array (shape = 10,9 )
 # Cho turn: +1, Han turn: -1
 # No mark: 0, Cho mark: Plus, Han mark = minus
+class Game:
+
+	def __init__(self,cho_form='mssm',han_form='mssm'):		
+		self.cho_form=cho_form
+		self.han_form=han_form
+		formation_cho=form_to_board(self.cho_form)
+		formation_han=form_to_board(self.han_form)
+		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
+		self.num_turn=1
+		self.gameState = GameState(self.init_board, self.num_turn)
+		
+		self.currentPlayer = self.gameState.playerTurn
+		self.actionSpace = np.array(make_action_space())
+		self.pieces = ['ㅁ','졸','사','상','마','포','차','왕']
+		self.grid_shape = (10,9)
+		self.input_shape = None
+		self.name = 'janggi'
+		self.state_size = len(self.gameState.BoardToArray)
+		self.action_size = len(self.actionSpace)
+
+	def reset(self,cho_form='mssm',han_form='mssm'):
+		self.currentPlayer=1
+		formation_cho=form_to_board(cho_form)
+		formation_han=form_to_board(han_form)
+		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
+		self.gameState = GameState(self.init_board, 1)
+		return self.gameState
+
+	def step(self, action):
+		next_state, value, done = self.gameState.takeAction(action)
+		self.gameState = next_state
+		self.currentPlayer = -self.currentPlayer
+		info = None
+		return ((next_state, value, done, info))
+
+	
 
 class GameState():
 	def __init__(self, board, num_turn):
 		#홀수면 Cho'turn -> +1
-		if num_turn%2 :
+		if num_turn%2==1 :
 			self.playerTurn=+1
 		else:
 			self.playerTurn=-1
@@ -148,7 +184,7 @@ class GameState():
 				dummy_board[after[0],after[1]]=dummy_board[before[0],before[1]]
 				dummy_board[before[0],before[1]]=0
 				
-				if dummy_board==self.board_memory[3]:
+				if np.all(dummy_board==self.board_memory[3]):
 					allowedCoord.remove(coord)
 		return allowedCoord
 
@@ -156,32 +192,31 @@ class GameState():
 
 	#action을 주면 action을 취한 상태의 state 와 value 등을 반환
 	def takeAction(self, action):
-		self.check_turn
+		# self.check_turn()
 		#memory_board
 		self.memorize_board()
+		print(action)
 		coord=action_to_coord(action)
 		before=coord[0]
 		after=coord[1]
+		
 		newBoard = self.board
 		newBoard[after[0],after[1]]=newBoard[before[0],before[1]]
 		newBoard[before[0],before[1]]=0
+		print(newBoard)
 		newState = GameState(newBoard, self.num_turn+1)
-	
 		
-
 		value = 0
 		done = 0
-
 		if newState.isEndGame:
 			#winner and turn is same      -> +1
 			#winner and turn is different -> -1
 			value = newState.who_win * newState.playerTurn
 			done = 1
 
-		state=self
-		window=Visualize(state)	
-		window.show(state)
-		return (newState, value, done) 
+		window=Visualize(self)	
+		window.show(self)
+		return newState, value, done
 
 
 	def render(self, logger):
@@ -194,45 +229,6 @@ class GameState():
 
 
 
-class Game:
-
-	def __init__(self,cho_form='mssm',han_form='mssm'):		
-		self.cho_form=cho_form
-		self.han_form=han_form
-		formation_cho=form_to_board(self.cho_form)
-		formation_han=form_to_board(self.han_form)
-		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
-		self.num_turn=1
-		self.gameState = GameState(self.init_board, self.num_turn)
-		
-		self.currentPlayer = self.gameState.playerTurn
-		self.actionSpace = np.array(make_action_space())
-		self.pieces = [None,'졸','사','상','마','포','차','왕']
-		self.grid_shape = (10,9)
-		self.input_shape = None
-		self.name = 'janggi'
-		self.state_size = len(self.gameState.BoardToArray)
-		self.action_size = len(self.actionSpace)
-
-	def reset(self,cho_form='mssm',han_form='mssm'):
-		self.num_turn=1
-		formation_cho=form_to_board(cho_form)
-		formation_han=form_to_board(han_form)
-		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
-		self.gameState = GameState(self.init_board, 1)
-		return self.gameState
-
-	def step(self, action):
-		next_state, value, done = self.gameState.takeAction(action)
-		self.gameState = next_state
-		
-		state=self.gameState
-		window=Visualize(state)	
-		window.show(state)
-		info = None
-		return ((next_state, value, done, info))
-
-	
 
 	# def identities(self, state, actionValues):
 	# 	identities = [(state,actionValues)]

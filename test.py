@@ -15,7 +15,8 @@ test_board=np.array([
                     [ 6, 4, 3, 2, 0, 2, 3, 4, 6]])
 
 from game import GameState,Game
-janggi=Game()
-print(janggi.gameState.board)
+print(test_board[0,8])
+action=[[1,9],[2,8]]
+print(action_to_coord(action))
 
 

@@ -434,15 +434,15 @@ class Visualize:
 
         pygame.display.set_caption('장기')
 
-        # BASIC_FONT = pygame.font.Font('/usr/share/fonts/NanumGothic.ttf', 16)
-        # NUM_FONT= pygame.font.Font('/usr/share/fonts/NanumPen.ttf', 20)
-        # TITLE_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicBold.ttf', 24)
-        # GAMEOVER_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicExtraBold.ttf', 48)
+        BASIC_FONT = pygame.font.Font('/usr/share/fonts/NanumGothic.ttf', 16)
+        NUM_FONT= pygame.font.Font('/usr/share/fonts/NanumPen.ttf', 20)
+        TITLE_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicBold.ttf', 24)
+        GAMEOVER_FONT = pygame.font.Font('/usr/share/fonts/NanumGothicExtraBold.ttf', 48)
 
-        BASIC_FONT = pygame.font.Font('/Windows/Fonts/nanumgothic.ttf', 16)
-        NUM_FONT= pygame.font.Font('/Windows/Fonts/nanumpen.ttf', 20)
-        TITLE_FONT = pygame.font.Font('/Windows/Fonts/nanumgothicbold.ttf', 24)
-        GAMEOVER_FONT = pygame.font.Font('/Windows/Fonts/nanumgothicextrabold.ttf', 48)
+        # BASIC_FONT = pygame.font.Font('/Windows/Fonts/nanumgothic.ttf', 16)
+        # NUM_FONT= pygame.font.Font('/Windows/Fonts/nanumpen.ttf', 20)
+        # TITLE_FONT = pygame.font.Font('/Windows/Fonts/nanumgothicbold.ttf', 24)
+        # GAMEOVER_FONT = pygame.font.Font('/Windows/Fonts/nanumgothicextrabold.ttf', 48)
 
         # Set initial parameters
         self.init = False

@@ -47,8 +47,6 @@ def coord_to_action(coord):
     return [action_before,action_after]
 
 def action_to_coord(action):
-    print('action')
-    print(action)
     before=action[0]
     after=action[1]
     

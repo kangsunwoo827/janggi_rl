@@ -53,6 +53,7 @@ class Agent():
 
 	
 	def simulate(self):
+		print('simulate')
 
 		lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
 		self.mcts.root.state.render(lg.logger_mcts)
@@ -137,9 +138,10 @@ class Agent():
 			value, probs, allowed_idx,allowedActions = self.get_preds(leaf.state)
 			lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
-			
 			probs =probs [allowed_idx]
+
 			for idx, action in enumerate(allowedActions):
+				print('eval')
 				newState, _, _ = leaf.state.takeAction(action)
 				if newState.id not in self.mcts.tree:
 					node = mc.Node(newState)
