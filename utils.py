@@ -39,19 +39,16 @@ def form_to_board(form):
 
 #장기 좌표 표기법과 array의 index 사이의 변환
 def coord_to_action(coord):
-    before=coord[0]
-    after=coord[1]
+    before=np.copy(coord[0])
+    after=np.copy(coord[1])
     action_before=[(before[0]+1)%10, before[1]+1]
     action_after=[(after[0]+1)%10, after[1]+1]
 
     return [action_before,action_after]
 
 def action_to_coord(action):
-    if type(action)!=type([1,2]):
-        print(action)
-        print(type(action))
-    before=action[0]
-    after=action[1]
+    before=np.copy(action[0])
+    after=np.copy(action[1])
     
     if not before[0]:
         before[0]=10
@@ -88,8 +85,13 @@ def can_move(piece,before,gameboard,turn):
 
         #궁안에 있으면 대각선 추가 (졸)
         if in_gung:
-            move_list.append([before[0]-turn, before[1]-1])
-            move_list.append([before[0]-turn, before[1]+1])
+            if before[1]==3:
+                move_list.append([before[0]-turn, before[1]+1])
+            elif before[1]==5:
+                move_list.append([before[0]-turn, before[1]-1])
+            else:
+                move_list.append([before[0]-turn, before[1]-1])
+                move_list.append([before[0]-turn, before[1]+1])
         
     if piece ==2:
             move_list=[
@@ -348,7 +350,7 @@ def can_move(piece,before,gameboard,turn):
 #can_move를 이용해서 존재할 수 있는 모든 gameboard 계산
 
 def make_action_space():
-    action_space=[]
+    coord_space=[]
     for x in range(9):
         for y in range(10):
             #직선
@@ -356,24 +358,24 @@ def make_action_space():
             board_lin[y,x]=6
             before=[y,x]
             for after in can_move(6,before,board_lin,1):
-                action_space.append([before,after])
+                coord_space.append([before,after])
 
             #상
             board_sang=np.zeros((10,9))
             board_sang[y,x]=3
             before=[y,x]
             for after in can_move(3,before,board_sang,1):
-                action_space.append([before,after])
+                coord_space.append([before,after])
 
             #마
             board_ma=np.zeros((10,9))
             board_ma[y,x]=4
             before=[y,x]
             for after in can_move(4,before,board_ma,1):
-                action_space.append([before,after])
+                coord_space.append([before,after])
     
     #coord-> action
-    action_space=[coord_to_action(coord) for coord in action_space]
+    action_space=[coord_to_action(coord) for coord in coord_space]
 
     return action_space
 
@@ -399,9 +401,7 @@ def identity_space_index():
 
 
 def action_to_message(action):
-    coord=action_to_coord(action)
-    before=coord[0]
-    after=coord[1]
+
     message='From'+str(action[0])+' To'+str(action[1])
 
     return message

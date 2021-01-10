@@ -71,12 +71,11 @@ class MCTS():
 				nu = [0] * len(currentNode.edges)
 
 			Nb = 0
-			for action, edge in currentNode.edges:
+			for action, _, edge in currentNode.edges:
 				Nb = Nb + edge.stats['N']
 
-			for idx, (action, edge) in enumerate(currentNode.edges):
-				#U : exploration term			
-				
+			for idx, (action, _, edge) in enumerate(currentNode.edges):
+				#U : exploration term	
 				U = self.cpuct * \
 					((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )  * \
 					np.sqrt(Nb) / (1 + edge.stats['N'])
@@ -94,43 +93,38 @@ class MCTS():
 					action_message = action_to_message(action)
 					simulationEdge = edge
 
-			lg.logger_mcts.info('action with highest Q + U...%s', action_message)
+			# lg.logger_mcts.info('action with highest Q + U...%s', action_message)
 	
 			newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
 			currentNode = simulationEdge.outNode
 			breadcrumbs.append(simulationEdge)
 
-		lg.logger_mcts.info('DONE...%d', done)
+		# lg.logger_mcts.info('DONE...%d', done)
 
 		return currentNode, value, done, breadcrumbs
 
 
 
 	def backFill(self, leaf, value, breadcrumbs):
-		lg.logger_mcts.info('------DOING BACKFILL------')
+		# lg.logger_mcts.info('------DOING BACKFILL------')
 
 		currentPlayer = leaf.state.playerTurn
 
 		for edge in breadcrumbs:
-			playerTurn = edge.playerTurn
-			if playerTurn == currentPlayer:
-				direction = 1
-			else:
-				direction = -1
 
 			edge.stats['N'] = edge.stats['N'] + 1
-			edge.stats['W'] = edge.stats['W'] + value * direction
+			edge.stats['W'] = edge.stats['W'] + value
 			edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
-			lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
-				, value * direction
-				, playerTurn
-				, edge.stats['N']
-				, edge.stats['W']
-				, edge.stats['Q']
-				)
+			# lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
+				# , value
+				# , playerTurn
+				# , edge.stats['N']
+				# , edge.stats['W']
+				# , edge.stats['Q']
+				# )
 
-			edge.outNode.state.render(lg.logger_mcts)
+			# edge.outNode.state.render(lg.logger_mcts)
 
 	def addNode(self, node):
 		self.tree[node.id] = node

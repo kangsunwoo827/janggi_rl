@@ -23,7 +23,7 @@ class Game:
 		self.grid_shape = (10,9)
 		self.input_shape = None
 		self.name = 'janggi'
-		self.state_size = len(self.gameState.BoardToArray)
+		self.state_size = len(self.gameState.BoardToInput)
 		self.action_size = len(self.actionSpace)
 
 	def reset(self,cho_form='mssm',han_form='mssm'):
@@ -83,7 +83,7 @@ class GameState():
 		else:
 			self.playerScore+=1.5
 
-		self.BoardToArray = self._convertBoardToArr()
+		self.BoardToInput = self._convertBoardToInput()
 		self.id = self._convertStateToId()
 		self.score = self._getScore()
 		self.allowedActions = self._allowedActions()
@@ -124,15 +124,16 @@ class GameState():
 		else:
 			self.playerTurn=-1
 
-	#state를 position array들로 변환 
-	def _convertBoardToArr(self):
-		position=np.zeros((14,*np.shape(self.board)))
+	#state를 Input array들로 변환 
+	def _convertBoardToInput(self):
+		input_arr=np.zeros((15,*np.shape(self.board)))
 		for i in range(7):
 			#해당되는 값이 아닌 곳은 0으로 
 			mark=(i+1)*self.playerTurn
-			position[i]=np.where(self.board!=mark,0,self.board)
-			position[i+7]=np.where(self.board!=-mark,0,self.board)
-		return position
+			input_arr[i]=np.where(self.board!=mark,0,self.board)
+			input_arr[i+7]=np.where(self.board!=-mark,0,self.board)
+		input_arr[14]=np.ones((10,9))*self.playerTurn
+		return input_arr
 
 	#state를 id로 변환
 	def _convertStateToId(self):

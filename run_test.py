@@ -47,8 +47,8 @@ else:
 ######## LOAD MODEL IF NECESSARY ########
 
 # create an untrained neural network objects from the config file
-current_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (14,) + env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
-best_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (14,) +  env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
+current_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (15,) + env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
+best_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (15,) +  env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
 
 #If loading an existing neural netwrok, set the weights from that model
 if initialise.INITIAL_MODEL_VERSION != None:
@@ -78,7 +78,6 @@ last=time.time()
 while 1:
     print(time.time()-last)
     last=time.time()
-
     iteration += 1
     reload(lg)
     reload(config)
@@ -94,6 +93,7 @@ while 1:
     print('\n')
     
     memory.clear_stmemory()
+    print('clear_stmemory')
     
     if len(memory.ltmemory) >= config.MEMORY_SIZE:
 
