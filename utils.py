@@ -47,6 +47,9 @@ def coord_to_action(coord):
     return [action_before,action_after]
 
 def action_to_coord(action):
+    if type(action)!=type([1,2]):
+        print(action)
+        print(type(action))
     before=action[0]
     after=action[1]
     
@@ -374,15 +377,32 @@ def make_action_space():
 
     return action_space
 
+def identity_space_index():
+    identity_index=[]
+    action_space=make_action_space()
+    for idx, action in enumerate(action_space):
+        coord=action_to_coord(action)
+        before=coord[0]
+        after=coord[1]
+        new_before=[before[0], 8-before[1]]
+        new_after=[after[0], 8-after[1]]       
+        new_coord=[new_before, new_after]
+        identity_action=coord_to_action(new_coord)
+        if identity_action in action_space:
+            identity_index.append(action_space.index(identity_action))
+        else:
+            identity_index.append(idx)
 
-def action_to_message(state,action):
+    return identity_index
+
+
+
+
+def action_to_message(action):
     coord=action_to_coord(action)
     before=coord[0]
     after=coord[1]
-    board=state.board
-    piece=abs(board[after[0],after[1]])
-    piece=state.pieces[piece]
-    message=str(action[0])+piece+str(action[1])
+    message='From'+str(action[0])+' To'+str(action[1])
 
     return message
 

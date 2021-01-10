@@ -12,7 +12,7 @@ import time
 import matplotlib.pyplot as plt
 from IPython import display
 import pylab as pl
-from utils import make_action_space
+from utils import make_action_space,action_to_message
 
 class User():
 	def __init__(self, name, state_size, action_size):
@@ -53,8 +53,6 @@ class Agent():
 
 	
 	def simulate(self):
-		print('simulate')
-
 		lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
 		self.mcts.root.state.render(lg.logger_mcts)
 		lg.logger_mcts.info('CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
@@ -89,13 +87,13 @@ class Agent():
 
 		####pick the action
 		action, value = self.chooseAction(pi, values, tau)
-
+		
 		nextState, _, _ = state.takeAction(action)
 
 		NN_value = -self.get_preds(nextState)[0]
 
 		lg.logger_mcts.info('ACTION VALUES...%s', pi)
-		lg.logger_mcts.info('CHOSEN ACTION...%d', action)
+		lg.logger_mcts.info('CHOSEN ACTION...%s', str(action))
 		lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)
 		lg.logger_mcts.info('NN PERCEIVED VALUE...%f', NN_value)
 
@@ -107,10 +105,9 @@ class Agent():
 		inputToModel = np.array([self.model.convertToModelInput(state)])
 
 		preds = self.model.predict(inputToModel)
-		
 		value_array = preds[0]
 		logits_array = preds[1]
-		value = value_array[0]
+		value = value_array[0][0]
 
 		logits = logits_array[0]
 		action_space=make_action_space()
@@ -125,9 +122,8 @@ class Agent():
 
 		#SOFTMAX
 		odds = np.exp(logits)
-		probs = odds / np.sum(odds) ###put this just before the for?
-
-		return ((value, probs, allowed_idx,allowedActions))
+		probs = odds / np.sum(odds) 
+		return (value, probs, allowed_idx,allowedActions)
 
 
 	def evaluateLeaf(self, leaf, value, done, breadcrumbs):
@@ -139,21 +135,22 @@ class Agent():
 			lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
 			probs =probs [allowed_idx]
-
 			for idx, action in enumerate(allowedActions):
-				print('eval')
+			
 				newState, _, _ = leaf.state.takeAction(action)
+				
 				if newState.id not in self.mcts.tree:
+					
 					node = mc.Node(newState)
 					self.mcts.addNode(node)
 					lg.logger_mcts.info('added node...%s...p = %f', node.id, probs[idx])
 				else:
+					
 					node = self.mcts.tree[newState.id]
 					lg.logger_mcts.info('existing node...%s...', node.id)
 				
 				newEdge = mc.Edge(leaf, node, probs[idx], action)
 				leaf.edges.append((action, newEdge))
-			
 		else:
 			lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, value)
 
@@ -176,13 +173,15 @@ class Agent():
 	def chooseAction(self, pi, values, tau):
 		if tau == 0:
 			actions = np.argwhere(pi == max(pi))
-			action = random.choice(actions)[0]
+			action_idx = random.choice(actions)[0]
 		else:
-			action_idx = np.random.multinomial(1, pi)
-			action = np.where(action_idx==1)[0][0]
-
-		value = values[action]
-
+			random_action_idx = np.random.multinomial(1, pi)
+			action_idx = np.where(random_action_idx==1)[0][0]
+		
+		value = values[action_idx]
+		action_space=make_action_space()
+		action=action_space[action_idx]
+		
 		return action, value
 
 	def replay(self, ltmemory):

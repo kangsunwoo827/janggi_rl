@@ -3,16 +3,13 @@
 # %load_ext autoreload
 # %autoreload 2
 
-# from keras.utils import plot_model
+from keras.utils import plot_model
 import numpy as np
 np.set_printoptions(suppress=True)
 
 from shutil import copyfile
 import random
 from importlib import reload
-
-
-
 
 from game import Game, GameState
 from agent import Agent
@@ -25,6 +22,7 @@ import loggers as lg
 from settings import run_folder, run_archive_folder
 import initialise
 import pickle
+import time
 
 lg.logger_main.info('=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*')
 lg.logger_main.info('=*=*=*=*=*=.      NEW LOG      =*=*=*=*=*')
@@ -66,7 +64,7 @@ else:
 
 #copy the config file to the run folder
 copyfile('./config.py', run_folder + 'config.py')
-# plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
+plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
 
 print('\n')
 
@@ -76,8 +74,10 @@ current_player = Agent('current_player', env.state_size, env.action_size, config
 best_player = Agent('best_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_NN)
 #user_player = User('player1', env.state_size, env.action_size)
 iteration = 0
-
+last=time.time()
 while 1:
+    print(time.time()-last)
+    last=time.time()
 
     iteration += 1
     reload(lg)
@@ -133,7 +133,7 @@ while 1:
         print(scores)
         print('\nSTARTING PLAYER / NON-STARTING PLAYER SCORES')
         print(sp_scores)
-        #print(points)
+        print(points)
 
         print('\n\n')
 

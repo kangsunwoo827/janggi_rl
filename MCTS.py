@@ -75,7 +75,7 @@ class MCTS():
 				Nb = Nb + edge.stats['N']
 
 			for idx, (action, edge) in enumerate(currentNode.edges):
-				#U=exploration			
+				#U : exploration term			
 				
 				U = self.cpuct * \
 					((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )  * \
@@ -91,13 +91,12 @@ class MCTS():
 				if Q + U > maxQU:
 					maxQU = Q + U
 					simulationAction = action
-					action_message = action_to_message(currentNode.state,action)
+					action_message = action_to_message(action)
 					simulationEdge = edge
 
 			lg.logger_mcts.info('action with highest Q + U...%s', action_message)
 	
 			newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
-			print('done')
 			currentNode = simulationEdge.outNode
 			breadcrumbs.append(simulationEdge)
 

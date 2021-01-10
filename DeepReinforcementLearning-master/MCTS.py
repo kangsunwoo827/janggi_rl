@@ -110,17 +110,13 @@ class MCTS():
 
 		for edge in breadcrumbs:
 			playerTurn = edge.playerTurn
-			if playerTurn == currentPlayer:
-				direction = 1
-			else:
-				direction = -1
 
 			edge.stats['N'] = edge.stats['N'] + 1
-			edge.stats['W'] = edge.stats['W'] + value * direction
+			edge.stats['W'] = edge.stats['W'] + value
 			edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
 			lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
-				, value * direction
+				, value 
 				, playerTurn
 				, edge.stats['N']
 				, edge.stats['W']

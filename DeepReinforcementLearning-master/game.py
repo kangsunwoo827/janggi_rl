@@ -205,13 +205,10 @@ class GameState():
 
 
 	def takeAction(self, action):
-		print(self.board)
-		print(action)
 		newBoard = np.array(self.board)
 		newBoard[action]=self.playerTurn
 		
 		newState = GameState(newBoard, -self.playerTurn)
-		print(newBoard)
 		value = 0
 		done = 0
 

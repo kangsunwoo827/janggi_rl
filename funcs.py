@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-# import loggers as lg
+import loggers as lg
 
 from game import Game, GameState
 from model import Residual_CNN
@@ -9,6 +9,7 @@ from model import Residual_CNN
 from agent import Agent, User
 
 import config
+from utils import action_to_message
 
 def playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0, goes_first = 0):
     
@@ -37,7 +38,7 @@ def playMatchesBetweenVersions(env, run_version, player1version, player2version,
     return (scores, memory, points, sp_scores)
 
 
-def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = None, goes_first = 1):
+def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = None, goes_first = 0):
 
     env = Game()
     scores = {player1.name:0, "drawn": 0, player2.name:0}
@@ -79,8 +80,10 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
         env.gameState.render(logger)
 
         while done == 0:
+            print(turn)
+            print(done)
             turn = turn + 1
-    
+
             #### Run the MCTS algo and return an action
             if turn < turns_until_tau0:
                 action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)
@@ -91,12 +94,12 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
                 ####Commit the move to memory
                 memory.commit_stmemory(env.identities, state, pi)
 
-
-            logger.info('action: %d', action)
+            action_mes=action_to_message(action)
+            logger.info('action: %s', action_mes)
             for r in range(env.grid_shape[0]):
                 logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x,2)) for x in pi[env.grid_shape[1]*r : (env.grid_shape[1]*r + env.grid_shape[1])]])
-            logger.info('MCTS perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(MCTS_value,2))
-            logger.info('NN perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(NN_value,2))
+            logger.info('MCTS perceived value for turn %s: %f', str(state.playerTurn) ,np.round(MCTS_value,2))
+            logger.info('NN perceived value for turn %s: %f', str(state.playerTurn) ,np.round(NN_value,2))
             logger.info('====================')
 
             ### Do the action
