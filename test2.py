@@ -14,4 +14,4 @@ test_board=np.array([
                     [ 6, 4, 3, 2, 0, 2, 3, 4, 6]])
 
 s=GameState(test_board,4)
-print(s.BoardToInput[-1])
+print(s.id)

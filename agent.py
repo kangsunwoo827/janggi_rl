@@ -60,41 +60,29 @@ class Agent():
 		##### MOVE THE LEAF NODE
 		leaf, value, done, breadcrumbs = self.mcts.moveToLeaf()
 		# leaf.state.render(lg.logger_mcts)
-		
 		##### EVALUATE THE LEAF NODE
 		value, breadcrumbs = self.evaluateLeaf(leaf, value, done, breadcrumbs)
-		
 		##### BACKFILL THE VALUE THROUGH THE TREE
 		self.mcts.backFill(leaf, value, breadcrumbs)
-		
 
 	def act(self, state, tau):
-	
 		if self.mcts == None or state.id not in self.mcts.tree:
 			self.buildMCTS(state)
 		else:
 			self.changeRootMCTS(state)
-		
-		
-
 		#### run the simulation
 		for sim in range(self.MCTSsimulations):
 			# lg.logger_mcts.info('***************************')
 			# lg.logger_mcts.info('****** SIMULATION %d ******', sim + 1)
 			# lg.logger_mcts.info('***************************')
 			self.simulate()
-
 	
 		#### get action values
 		pi, values = self.getAV(1)
-
 		####pick the action
 		action, value = self.chooseAction(pi, values, tau)
-		
 		nextState, _, _ = state.takeAction(action)
-
 		NN_value = -self.get_preds(nextState)[0]
-
 		# lg.logger_mcts.info('ACTION VALUES...%s', pi)
 		# lg.logger_mcts.info('CHOSEN ACTION...%s', str(action))
 		# lg.logger_mcts.info('MCTS PERCEIVED VALUE...%f', value)

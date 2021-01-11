@@ -39,16 +39,18 @@ def form_to_board(form):
 
 #장기 좌표 표기법과 array의 index 사이의 변환
 def coord_to_action(coord):
-    before=np.copy(coord[0])
-    after=np.copy(coord[1])
+    copy_coord=np.copy(coord)
+    before=copy_coord[0]
+    after=copy_coord[1]
     action_before=[(before[0]+1)%10, before[1]+1]
     action_after=[(after[0]+1)%10, after[1]+1]
 
     return [action_before,action_after]
 
 def action_to_coord(action):
-    before=np.copy(action[0])
-    after=np.copy(action[1])
+    copy_action=np.copy(action)
+    before=copy_action[0]
+    after=copy_action[1]
     
     if not before[0]:
         before[0]=10

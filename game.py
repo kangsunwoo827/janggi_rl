@@ -139,6 +139,7 @@ class GameState():
 	def _convertStateToId(self):
 		flat = self.board.flatten()
 		id = ''.join(map(str,flat))
+		id+=('t'+str(self.num_turn))
 		return id
 
 	#게임이 끝났는지 확인

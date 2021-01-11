@@ -22,7 +22,7 @@ class Node():
 class Edge():
 
 	def __init__(self, inNode, outNode, prior, action):
-		self.id = inNode.state.id + '|' + outNode.state.id
+		self.id = '{}|{}'.format(inNode.state.id, outNode.state.id)
 		self.inNode = inNode
 		self.outNode = outNode
 		self.playerTurn = inNode.state.playerTurn
@@ -49,17 +49,15 @@ class MCTS():
 
 	def moveToLeaf(self):
 
-		lg.logger_mcts.info('------MOVING TO LEAF------')
+		# lg.logger_mcts.info('------MOVING TO LEAF------')
 
 		breadcrumbs = []
 		currentNode = self.root
 
 		done = 0
 		value = 0
-
 		while not currentNode.isLeaf():
-
-			lg.logger_mcts.info('PLAYER TURN...%d', currentNode.state.playerTurn)
+			# lg.logger_mcts.info('PLAYER TURN...%d', currentNode.state.playerTurn)
 		
 			maxQU = -99999
 
@@ -70,9 +68,11 @@ class MCTS():
 				epsilon = 0
 				nu = [0] * len(currentNode.edges)
 
+
 			Nb = 0
 			for action, _, edge in currentNode.edges:
 				Nb = Nb + edge.stats['N']
+
 
 			for idx, (action, _, edge) in enumerate(currentNode.edges):
 				#U : exploration term	
@@ -90,17 +90,16 @@ class MCTS():
 				if Q + U > maxQU:
 					maxQU = Q + U
 					simulationAction = action
-					action_message = action_to_message(action)
+					# action_message = action_to_message(action)
 					simulationEdge = edge
-
-			# lg.logger_mcts.info('action with highest Q + U...%s', action_message)
-	
+					# lg.logger_mcts.info('action with highest Q + U...%s', action_message)
+			
 			newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
-			currentNode = simulationEdge.outNode
+		
+			currentNode = simulationEdge.outNode #여기서 변동
 			breadcrumbs.append(simulationEdge)
 
 		# lg.logger_mcts.info('DONE...%d', done)
-
 		return currentNode, value, done, breadcrumbs
 
 
