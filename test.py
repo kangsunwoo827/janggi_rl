@@ -52,57 +52,57 @@ import pickle
 import config
 
 env=Game()
-current_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (14,) + env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
-best_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (14,) +  env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
+current_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (15,) + env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
+best_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (15,) +  env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
 
 current_player = Agent('current_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, current_NN)
 
 gs = GameState(test_board, 1)
 
-# # preds = current_player.get_preds(gs)
+preds = current_player.get_preds(gs)
 
 # # print(preds)
-# # current_player.model.viewLayers()
-# from keras.utils import plot_model
-# plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
-best_player = Agent('best_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_NN)
-env = Game()
-player1=best_player
-player2=best_player
-scores = {player1.name:0, "drawn": 0, player2.name:0}
-sp_scores = {'sp':0, "drawn": 0, 'nsp':0}
-points = {player1.name:[], player2.name:[]}
+# # # current_player.model.viewLayers()
+# # from keras.utils import plot_model
+# # plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
+# best_player = Agent('best_player', env.state_size, env.action_size, config.MCTS_SIMS, config.CPUCT, best_NN)
+# env = Game()
+# player1=best_player
+# player2=best_player
+# scores = {player1.name:0, "drawn": 0, player2.name:0}
+# sp_scores = {'sp':0, "drawn": 0, 'nsp':0}
+# points = {player1.name:[], player2.name:[]}
 
    
-state = env.reset()
+# state = env.reset()
 
-done = 0
-turn = 0
-player1.mcts = None
-player2.mcts = None
+# done = 0
+# turn = 0
+# player1.mcts = None
+# player2.mcts = None
 
-player1Starts = random.randint(0,1) * 2 - 1
+# player1Starts = random.randint(0,1) * 2 - 1
 
-if player1Starts == 1:
-    players = {1:{"agent": player1, "name":player1.name}
-            , -1: {"agent": player2, "name":player2.name}
-            }
+# if player1Starts == 1:
+#     players = {1:{"agent": player1, "name":player1.name}
+#             , -1: {"agent": player2, "name":player2.name}
+#             }
    
-else:
-    players = {1:{"agent": player2, "name":player2.name}
-            , -1: {"agent": player1, "name":player1.name}
-            }
+# else:
+#     players = {1:{"agent": player2, "name":player2.name}
+#             , -1: {"agent": player1, "name":player1.name}
+#             }
 
-print(env.gameState.board)
+# print(env.gameState.board)
 
-while done == 0:
-    print('done:0')
-    turn = turn + 1
+# while done == 0:
+#     print('done:0')
+#     turn = turn + 1
 
-    #### Run the MCTS algo and return an action
-    if turn < 10:
-        action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)
-    else:
-        action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)
-    print(turn)
-    # print(action)/
+#     #### Run the MCTS algo and return an action
+#     if turn < 10:
+#         action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)
+#     else:
+#         action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)
+#     print(turn)
+#     # print(action)/

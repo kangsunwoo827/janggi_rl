@@ -79,12 +79,14 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
 
         # env.gameState.render(logger)
         
-        
+        lasttime=time.time()
         # window=Visualize(env.gameState)
         while done == 0:
             
             turn = turn + 1
             print(turn)
+            print(time.time()-lasttime)
+            lasttime=time.time()
             #### Run the MCTS algo and return an action
             if turn < turns_until_tau0:
                 action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)
@@ -112,47 +114,37 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
 
             # env.gameState.render(logger)
             # window.show(state)
-            print(state.board)
+            # print(state.board)
             if done == 1: 
                 print('done')
                 if memory != None:
                     #### If the game is finished, assign the values correctly to the game moves
                     for move in memory.stmemory:
-                        if move['playerTurn'] == state.playerTurn:
-                            move['value'] = value
-                        else:
-                            move['value'] = -value
-                         
+                        move['value'] =move['playerTurn']*value
+                       
                     memory.commit_ltmemory()
              
                 if value == 1:
                     # logger.info('%s WINS!', players[state.playerTurn]['name'])
                     print(players[state.playerTurn]['name'],' wins')
                     scores[players[state.playerTurn]['name']] = scores[players[state.playerTurn]['name']] + 1
-                    if state.playerTurn == 1: 
-                        sp_scores['sp'] = sp_scores['sp'] + 1
-                    else:
-                        sp_scores['nsp'] = sp_scores['nsp'] + 1
-
+                    sp_scores['sp'] = sp_scores['sp'] + 1
+                   
                 elif value == -1:
                     # logger.info('%s WINS!', players[-state.playerTurn]['name'])
                     print(players[-state.playerTurn]['name'],' wins')
                     scores[players[-state.playerTurn]['name']] = scores[players[-state.playerTurn]['name']] + 1
                
-                    if state.playerTurn == 1: 
-                        sp_scores['nsp'] = sp_scores['nsp'] + 1
-                    else:
-                        sp_scores['sp'] = sp_scores['sp'] + 1
-
+                    sp_scores['nsp'] = sp_scores['nsp'] + 1
+                    
                 else:
                     print('draw')
                     # logger.info('DRAW...')
                     scores['drawn'] = scores['drawn'] + 1
                     sp_scores['drawn'] = sp_scores['drawn'] + 1
 
-                pts = state.who_win
-                points[players[state.playerTurn]['name']].append(pts*state.playerTurn)
-                points[players[-state.playerTurn]['name']].append(pts*(-state.playerTurn))
+                points[players[state.playerTurn]['name']].append(value*state.playerTurn)
+                points[players[-state.playerTurn]['name']].append(value*(-state.playerTurn))
 
     return (scores, memory, points, sp_scores)
 

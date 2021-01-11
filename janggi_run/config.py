@@ -1,8 +1,8 @@
 #### SELF PLAY
-EPISODES = 75
-MCTS_SIMS = 100
-MEMORY_SIZE = 90000
-TURNS_UNTIL_TAU0 = 10 # turn on which it starts playing deterministically
+EPISODES = 15#25
+MCTS_SIMS = 25 #50
+MEMORY_SIZE = 15000 # 30000
+TURNS_UNTIL_TAU0 = 20 # turn on which it starts playing deterministically
 CPUCT = 1 #A hyperparameter determining the level of exploration.
 EPSILON = 0.2
 ALPHA = 0.8
@@ -26,5 +26,5 @@ HIDDEN_CNN_LAYERS = [
 	]
 
 #### EVALUATION
-EVAL_EPISODES = 20
+EVAL_EPISODES = 10
 SCORING_THRESHOLD = 1.3
