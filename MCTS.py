@@ -34,8 +34,8 @@ class Edge():
 					'Q': 0,
 					'P': prior,
 				}
-				
 
+# from visualize import Visualize		
 class MCTS():
 
 	def __init__(self, root, cpuct):
@@ -56,6 +56,7 @@ class MCTS():
 
 		done = 0
 		value = 0
+		# window=Visualize(currentNode.state)
 		while not currentNode.isLeaf():
 			# lg.logger_mcts.info('PLAYER TURN...%d', currentNode.state.playerTurn)
 		
@@ -95,7 +96,7 @@ class MCTS():
 					# lg.logger_mcts.info('action with highest Q + U...%s', action_message)
 			
 			newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
-		
+			# window.show(newState)
 			currentNode = simulationEdge.outNode #여기서 변동
 			breadcrumbs.append(simulationEdge)
 

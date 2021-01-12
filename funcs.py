@@ -10,7 +10,7 @@ from agent import Agent, User
 
 import config
 from utils import action_to_message
-from visualize import Visualize
+# from visualize import Visualize
 import time
 
 def playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0, goes_first = 0):
@@ -80,7 +80,8 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
 
         # env.gameState.render(logger)
         
-        window=Visualize(env.gameState)
+        # window=Visualize(env.gameState)
+        lasttime=time.time()
         while done == 0:
             
             turn = turn + 1
@@ -108,7 +109,9 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
             state, value, done, _ = env.step(action) #the value of the newState from the POV of the new playerTurn i.e. -1 if the previous player played a winning move
 
             # env.gameState.render(logger)
-            window.show(state)
+            # window.show(state)
+            # print(time.time()-lasttime)
+            # lasttime=time.time()
             # print(state.board)
             if done == 1: 
                 print('done')

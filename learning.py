@@ -89,6 +89,8 @@ while 1:
 
     ######## SELF PLAY ########
     print('SELF PLAYING {} EPISODES...'.format(str(config.EPISODES)))
+    print('Turn_tau is {}'.format(str(config.TURNS_UNTIL_TAU0)))
+    print('MCTS sim is {}'.format(str(config.MCTS_SIMS)))
     _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
     print('\n')
     
@@ -102,8 +104,8 @@ while 1:
         current_player.replay(memory.ltmemory)
         print('')
 
-        if iteration % 5 == 0:
-            pickle.dump( memory, open( run_folder + "memory/memory" + str(iteration).zfill(4) + ".p", "wb" ) )
+        # if iteration % 5 == 0:
+        pickle.dump( memory, open( run_folder + "memory/memory" + str(iteration).zfill(4) + ".p", "wb" ) )
 
         # lg.logger_memory.info('====================')
         # lg.logger_memory.info('NEW MEMORIES')
