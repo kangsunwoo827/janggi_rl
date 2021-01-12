@@ -46,13 +46,14 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
     scores = {player1.name:0, "drawn": 0, player2.name:0}
     sp_scores = {'sp':0, "drawn": 0, 'nsp':0}
     points = {player1.name:[], player2.name:[]}
-    
+    last_t=time.time()
     for e in range(EPISODES):
         print('EPISODE', str(e+1),'of',str(EPISODES))
         # logger.info('====================')
         # logger.info('EPISODE %d OF %d', e+1, EPISODES)
         # logger.info('====================')
-
+        print('episode time {}'.format(str(time.time()-last_t)))
+        last_t=time.time()
         state = env.reset()
         
         done = 0
@@ -79,14 +80,10 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
 
         # env.gameState.render(logger)
         
-        lasttime=time.time()
-        # window=Visualize(env.gameState)
+        window=Visualize(env.gameState)
         while done == 0:
             
             turn = turn + 1
-            print(turn)
-            print(time.time()-lasttime)
-            lasttime=time.time()
             #### Run the MCTS algo and return an action
             if turn < turns_until_tau0:
                 action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)
@@ -97,10 +94,9 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
                 ####Commit the move to memory
                 memory.commit_stmemory(env.identities, state, pi)
            
-
-            action_mes=action_to_message(action)
+            # action_mes=action_to_message(action)
             # logger.info('action: %s', action_mes)
-            print('action: %s'% action_mes)
+            # print('action: %s'% action_mes)
 
             # for r in range(env.grid_shape[0]):
             #     logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x,2)) for x in pi[env.grid_shape[1]*r : (env.grid_shape[1]*r + env.grid_shape[1])]])
@@ -108,12 +104,11 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
             # logger.info('NN perceived value for turn %s: %f', str(state.playerTurn) ,np.round(NN_value,2))
             # logger.info('====================')
 
-
             ### Do the action
             state, value, done, _ = env.step(action) #the value of the newState from the POV of the new playerTurn i.e. -1 if the previous player played a winning move
 
             # env.gameState.render(logger)
-            # window.show(state)
+            window.show(state)
             # print(state.board)
             if done == 1: 
                 print('done')
