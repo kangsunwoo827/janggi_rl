@@ -99,8 +99,7 @@ while 1:
     print('SELF PLAYING {} EPISODES...'.format(str(config.EPISODES)))
     print('Turn_tau is {}'.format(str(config.TURNS_UNTIL_TAU0)))
     print('MCTS sim is {}'.format(str(config.MCTS_SIMS)))
-    with tf.device("/gpu:0"):
-        _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
+    _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
     print('\n')
     
     memory.clear_stmemory()
@@ -140,8 +139,7 @@ while 1:
             
         ######## TOURNAMENT ########
         print('TOURNAMENT...')
-        with tf.device("/gpu:0"):
-            scores, _, points, sp_scores = playMatches(best_player, current_player, config.EVAL_EPISODES, lg.logger_tourney, turns_until_tau0 = 0, memory = None)
+        scores, _, points, sp_scores = playMatches(best_player, current_player, config.EVAL_EPISODES, lg.logger_tourney, turns_until_tau0 = 0, memory = None)
         print('\nSCORES')
         print(scores)
         print('\nSTARTING PLAYER / NON-STARTING PLAYER SCORES')

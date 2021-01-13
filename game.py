@@ -160,7 +160,7 @@ class GameState():
 		
 
 		#200턴안에 안끝나면 종료
-		if self.num_turn > 10:
+		if self.num_turn > 200:
 			isEnd=True
 			if playerScore>oppoScore :
 				who_win=self.playerTurn
