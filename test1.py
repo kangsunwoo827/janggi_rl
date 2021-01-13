@@ -1,32 +1,34 @@
-from game import Game
-from funcs import playMatchesBetweenVersions
-import loggers as lg
+import sys
+import numpy as np
+import tensorflow as tf
+from datetime import datetime
+ 
+ 
+random_matrix = np.random.rand(10000,10000)
+with tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=True)) as session:
+    with tf.device("/gpu:0"):
+        
+        dot_operation = tf.matmul(random_matrix, tf.transpose(random_matrix))
+        sum_operation = tf.reduce_sum(dot_operation)
+    
+        startTime = datetime.now()
+        result = session.run(sum_operation)
+        print(result)
+ 
+print("\n" * 2)
+print("GpuTime taken:", datetime.now() - startTime)
+print("\n" * 2)
 
-env = Game()
-# playMatchesBetweenVersions(
-# env
-# , 1  # 컴퓨터 플레이어가 위치한 실행 버전 번호
-# , -1 # 첫번째 플레이어의 버전 번호 (사람의 경우 1번)
-# , 12 # 두번째 플레이어의 버전 번호 (사람의 경우 1번)
-# , 10 # 플레이할 게임의 수
-# , lg.logger_tourney # 게임 로그를 저장할 곳
-# , 0  # 게임 시작 시 누가 먼저 둘 것인지 - 랜덤일 경우 0
-# )
-print(env.gameState.board)
-print('memory')
-print(env.gameState.board_memory)
-newState,_ ,_ = env.gameState.takeAction([[0,1],[9,1]])
-print(newState.board)
-print('memory')
-print(newState.board_memory)
-newState,_ ,_ = newState.takeAction([[1,1],[2,1]])
-print(newState.board)
-newState,_ ,_ = env.gameState.takeAction([[9,1],[0,1]])
-print(newState.board)
-newState,_ ,_ = newState.takeAction([[2,1],[1,1]])
-print(newState.board)
-newState,_ ,_ = env.gameState.takeAction([[0,1],[9,1]])
-print(newState.board)
-newState,_ ,_ = newState.takeAction([[1,1],[2,1]])
-print(newState.board)
-print(newState.allowedActions)
+with tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=True)) as session:
+    with tf.device("/cpu:0"):
+        
+        dot_operation = tf.matmul(random_matrix, tf.transpose(random_matrix))
+        sum_operation = tf.reduce_sum(dot_operation)
+    
+        startTime = datetime.now()
+        result = session.run(sum_operation)
+        print(result)
+ 
+print("\n" * 2)
+print("CpuTime taken:", datetime.now() - startTime)
+print("\n" * 2)

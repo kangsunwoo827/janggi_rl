@@ -39,7 +39,7 @@ def form_to_board(form):
 
 #장기 좌표 표기법과 array의 index 사이의 변환
 def coord_to_action(coord):
-    copy_coord=np.copy(coord)
+    copy_coord=np.array(coord)
     before=copy_coord[0]
     after=copy_coord[1]
     action_before=[(before[0]+1)%10, before[1]+1]
@@ -48,7 +48,7 @@ def coord_to_action(coord):
     return [action_before,action_after]
 
 def action_to_coord(action):
-    copy_action=np.copy(action)
+    copy_action=np.array(action)
     before=copy_action[0]
     after=copy_action[1]
     
@@ -392,10 +392,8 @@ def identity_space_index():
         new_after=[after[0], 8-after[1]]       
         new_coord=[new_before, new_after]
         identity_action=coord_to_action(new_coord)
-        if identity_action in action_space:
-            identity_index.append(action_space.index(identity_action))
-        else:
-            identity_index.append(idx)
+        identity_index.append(action_space.index(identity_action))
+      
 
     return identity_index
 

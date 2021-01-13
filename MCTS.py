@@ -49,7 +49,7 @@ class MCTS():
 
 	def moveToLeaf(self):
 
-		# lg.logger_mcts.info('------MOVING TO LEAF------')
+		lg.logger_mcts.info('------MOVING TO LEAF------')
 
 		breadcrumbs = []
 		currentNode = self.root
@@ -58,7 +58,7 @@ class MCTS():
 		value = 0
 		# window=Visualize(currentNode.state)
 		while not currentNode.isLeaf():
-			# lg.logger_mcts.info('PLAYER TURN...%d', currentNode.state.playerTurn)
+			lg.logger_mcts.info('PLAYER TURN...%d', currentNode.state.playerTurn)
 		
 			maxQU = -99999
 
@@ -84,29 +84,28 @@ class MCTS():
 				Q = edge.stats['Q']
 				
 
-				# lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-				# 	, action, action % 7, edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )
-				# 	, np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
+				# lg.logger_mcts.info('action: %s... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
+				# 	,action_to_message(action), edge.stats['N'], np.round(edge.stats['P'],6), np.round(nu[idx],6), ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )
+				# 	# , np.round(edge.stats['W'],6), np.round(Q,6), np.round(U,6), np.round(Q+U,6))
 
 				if Q + U > maxQU:
 					maxQU = Q + U
 					simulationAction = action
-					# action_message = action_to_message(action)
 					simulationEdge = edge
-					# lg.logger_mcts.info('action with highest Q + U...%s', action_message)
+					lg.logger_mcts.info('action with highest Q + U...%s', action_to_message(action))
 			
 			newState, value, done = currentNode.state.takeAction(simulationAction) #the value of the newState from the POV of the new playerTurn
 			# window.show(newState)
 			currentNode = simulationEdge.outNode #여기서 변동
 			breadcrumbs.append(simulationEdge)
 
-		# lg.logger_mcts.info('DONE...%d', done)
+		lg.logger_mcts.info('DONE...%d', done)
 		return currentNode, value, done, breadcrumbs
 
 
 
 	def backFill(self, leaf, value, breadcrumbs):
-		# lg.logger_mcts.info('------DOING BACKFILL------')
+		lg.logger_mcts.info('------DOING BACKFILL------')
 
 		currentPlayer = leaf.state.playerTurn
 
@@ -116,13 +115,13 @@ class MCTS():
 			edge.stats['W'] = edge.stats['W'] + value
 			edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
-			# lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
-				# , value
-				# , playerTurn
-				# , edge.stats['N']
-				# , edge.stats['W']
-				# , edge.stats['Q']
-				# )
+			lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f'
+				, value
+				, currentPlayer
+				, edge.stats['N']
+				, edge.stats['W']
+				, edge.stats['Q']
+				)
 
 			# edge.outNode.state.render(lg.logger_mcts)
 

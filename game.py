@@ -109,7 +109,6 @@ class GameState():
 			after_list=can_move(piece, before, self.board, self.playerTurn)
 			
 			for after in after_list:
-
 				allowed.append([before,after])
 
 		allowed=self.check_repetition(allowed)
@@ -126,7 +125,7 @@ class GameState():
 
 	#state를 Input array들로 변환 
 	def _convertBoardToInput(self):
-		input_arr=np.zeros((15,*np.shape(self.board)))
+		input_arr=np.zeros((15,10,9))
 		for i in range(7):
 			#해당되는 값이 아닌 곳은 0으로 
 			mark=(i+1)*self.playerTurn
@@ -161,7 +160,7 @@ class GameState():
 		
 
 		#200턴안에 안끝나면 종료
-		if self.num_turn > 200:
+		if self.num_turn > 10:
 			isEnd=True
 			if playerScore>oppoScore :
 				who_win=self.playerTurn
@@ -172,8 +171,8 @@ class GameState():
 
 
 	def _getScore(self): 
-		for i in range(np.shape(self.board)[0]):
-			for j in range(np.shape(self.board)[1]):
+		for i in range (10):
+			for j in range(9):
 				piece=self.board[i,j]
 				score=self.score_lst[abs(piece)]
 				if piece*self.playerTurn>0:
@@ -197,7 +196,7 @@ class GameState():
 		  and np.all(self.board_memory[2]==self.board)
 		  ):
 			for coord in allowedCoord:
-				dummy_board=np.copy(self.board)
+				dummy_board=np.array(self.board)
 				before=allowedCoord[0]
 				after=allowedCoord[1]
 				dummy_board[after[0],after[1]]=dummy_board[before[0],before[1]]
@@ -217,7 +216,7 @@ class GameState():
 		before=coord[0]
 		after=coord[1]
 		
-		newBoard = np.copy(self.board)
+		newBoard = np.array(self.board)
 		newBoard[after[0],after[1]]=newBoard[before[0],before[1]]
 		newBoard[before[0],before[1]]=0
 		newState = GameState(newBoard, self.num_turn+1)
