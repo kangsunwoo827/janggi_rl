@@ -416,6 +416,7 @@ def make_action_space():
     
     #coord-> action
     action_space=[coord_to_action(coord) for coord in coord_space if 0<=coord[1][0]<=9 and 0<=coord[1][1]<=8]
+    action_space.append(None)
 
     return action_space
 
@@ -437,7 +438,8 @@ def identity_space_index():
 
 
 def action_to_message(action):
-
+    if action == None:
+        message='한수 쉼'
     message='From'+str(action[0])+' To'+str(action[1])
 
     return message

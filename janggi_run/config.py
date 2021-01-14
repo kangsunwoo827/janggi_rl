@@ -1,10 +1,10 @@
 #### SELF PLAY
 EPISODES = 1#25
-MCTS_SIMS = 800 #50
+MCTS_SIMS = 800 #논문 
 MEMORY_SIZE = 30000 # 30000
 TURNS_UNTIL_TAU0 = 0 # turn on which it starts playing deterministically
 CPUCT = 2 #A hyperparameter determining the level of exploration.
-EPSILON = 0.2
+EPSILON = 0.5 # 원래 0.2
 ALPHA = 0.15
 
 

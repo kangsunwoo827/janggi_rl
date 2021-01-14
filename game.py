@@ -116,6 +116,7 @@ class GameState():
 		# allowed=self.check_repetition(allowed)
 		#coord 형태로 되어있기 때문에 action 형태로 변환
 		allowed=[coord_to_action(coord) for coord in allowed]
+		allowed.append(None)
 
 		return allowed
 
@@ -214,14 +215,18 @@ class GameState():
 	def takeAction(self, action):
 		# self.check_turn()
 		# self.memorize_board()
-		coord=action_to_coord(action)
-		before=coord[0]
-		after=coord[1]
-		
-		newBoard = np.array(self.board)
-		newBoard[after[0],after[1]]=newBoard[before[0],before[1]]
-		newBoard[before[0],before[1]]=0
-		newState = GameState(newBoard, self.num_turn+1)
+
+		if action == None:
+			newState = GameState(self.board, self.num_turn+1)
+		else:
+			coord=action_to_coord(action)
+			before=coord[0]
+			after=coord[1]
+			
+			newBoard = np.array(self.board)
+			newBoard[after[0],after[1]]=newBoard[before[0],before[1]]
+			newBoard[before[0],before[1]]=0
+			newState = GameState(newBoard, self.num_turn+1)
 		
 		value = 0
 		done = 0
