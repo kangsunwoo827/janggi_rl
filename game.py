@@ -14,12 +14,13 @@ class Game:
 		formation_cho=form_to_board(self.cho_form)
 		formation_han=form_to_board(self.han_form)
 		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
+	
 		self.num_turn=1
 		self.gameState = GameState(self.init_board, self.num_turn)
 		
 		self.currentPlayer = self.gameState.playerTurn
 		self.actionSpace = np.array(make_action_space())
-		self.pieces = ['ㅁ','졸','사','상','마','포','차','왕']
+		self.pieces = [' ','jol','sa','sang','ma','po','cha','wang']
 		self.grid_shape = (10,9)
 		self.input_shape = None
 		self.name = 'janggi'
@@ -31,7 +32,8 @@ class Game:
 		formation_cho=form_to_board(cho_form)
 		formation_han=form_to_board(han_form)
 		self.init_board=np.concatenate([np.flip(formation_han*(-1), axis=0),formation_cho])
-		self.gameState = GameState(self.init_board, 1)
+		self.init_board[0,4]=6
+		self.gameState = GameState(self.init_board, 2)
 		return self.gameState
 
 	def step(self, action):
@@ -75,7 +77,7 @@ class GameState():
 		self.num_turn=num_turn
 		self.pieces = [None,'졸','사','상','마','포','차','왕']
 		self.score_lst=[0,2,3,3,5,7,13,0]
-		self.board_memory=np.zeros((6,10,9))
+		# self.board_memory=np.zeros((6,10,9))
 		self.playerScore=0
 		self.oppoScore=0
 		if self.playerTurn>0:
@@ -111,7 +113,7 @@ class GameState():
 			for after in after_list:
 				allowed.append([before,after])
 
-		allowed=self.check_repetition(allowed)
+		# allowed=self.check_repetition(allowed)
 		#coord 형태로 되어있기 때문에 action 형태로 변환
 		allowed=[coord_to_action(coord) for coord in allowed]
 
@@ -138,7 +140,7 @@ class GameState():
 	def _convertStateToId(self):
 		flat = self.board.flatten()
 		id = ''.join(map(str,flat))
-		id+=('t'+str(self.num_turn))
+		id = ''.join([id,'t',str(self.playerTurn)])
 		return id
 
 	#게임이 끝났는지 확인
@@ -184,34 +186,34 @@ class GameState():
 
 
 	#ban repetition
-	def memorize_board(self):
-		for i in range(len(self.board_memory)-1):
-			self.board_memory[i]=self.board_memory[i+1]
-		self.board_memory[-1]=self.board
+	# def memorize_board(self):
+	# 	for i in range(len(self.board_memory)-1):
+	# 		self.board_memory[i]=self.board_memory[i+1]
+	# 	self.board_memory[-1]=self.board
 
-	def check_repetition(self,allowedCoord):
-		if (
-			np.all(self.board_memory[0]==self.board_memory[4])
-		 and np.all(self.board_memory[1]==self.board_memory[5])
-		  and np.all(self.board_memory[2]==self.board)
-		  ):
-			for coord in allowedCoord:
-				dummy_board=np.array(self.board)
-				before=allowedCoord[0]
-				after=allowedCoord[1]
-				dummy_board[after[0],after[1]]=dummy_board[before[0],before[1]]
-				dummy_board[before[0],before[1]]=0
+	# def check_repetition(self,allowedCoord):
+	# 	if (
+	# 		np.all(self.board_memory[0]==self.board_memory[4])
+	# 	 and np.all(self.board_memory[1]==self.board_memory[5])
+	# 	  and np.all(self.board_memory[2]==self.board)
+	# 	  ):
+	# 		for coord in allowedCoord:
+	# 			dummy_board=np.array(self.board)
+	# 			before=allowedCoord[0]
+	# 			after=allowedCoord[1]
+	# 			dummy_board[after[0],after[1]]=dummy_board[before[0],before[1]]
+	# 			dummy_board[before[0],before[1]]=0
 				
-				if np.all(dummy_board==self.board_memory[3]):
-					allowedCoord.remove(coord)
-		return allowedCoord
+	# 			if np.all(dummy_board==self.board_memory[3]):
+	# 				allowedCoord.remove(coord)
+	# 	return allowedCoord
 
 
 
 	#action을 주면 action을 취한 상태의 state 와 value 등을 반환
 	def takeAction(self, action):
 		# self.check_turn()
-		self.memorize_board()
+		# self.memorize_board()
 		coord=action_to_coord(action)
 		before=coord[0]
 		after=coord[1]
@@ -226,7 +228,7 @@ class GameState():
 		if newState.isEndGame:
 			#winner and turn is same      -> +1
 			#winner and turn is different -> -1
-			value = newState.who_win * newState.playerTurn
+			value = -newState.who_win * newState.playerTurn
 			done = 1
 
 		return newState, value, done

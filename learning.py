@@ -5,13 +5,12 @@
 # import os
 # os.environ["CUDA_VISIBLE_DEVICES"]='0'
 import tensorflow as tf
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
-config.log_device_placement = True  # to log device placement (on which device the operation ran)
-sess = tf.compat.v1.Session(config=config)
+# config = tf.compat.v1.ConfigProto()
+# config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+# config.log_device_placement = True  # to log device placement (on which device the operation ran)
+# sess = tf.compat.v1.Session(config=config)
 
-
-from keras.utils import plot_model
+from tensorflow.keras.utils import plot_model
 import numpy as np
 np.set_printoptions(suppress=True)
 
@@ -99,7 +98,8 @@ while 1:
     print('SELF PLAYING {} EPISODES...'.format(str(config.EPISODES)))
     print('Turn_tau is {}'.format(str(config.TURNS_UNTIL_TAU0)))
     print('MCTS sim is {}'.format(str(config.MCTS_SIMS)))
-    _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
+    with tf.device("/gpu:0"):
+        _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES, lg.logger_main, turns_until_tau0 = config.TURNS_UNTIL_TAU0, memory = memory)
     print('\n')
     
     memory.clear_stmemory()
@@ -139,7 +139,8 @@ while 1:
             
         ######## TOURNAMENT ########
         print('TOURNAMENT...')
-        scores, _, points, sp_scores = playMatches(best_player, current_player, config.EVAL_EPISODES, lg.logger_tourney, turns_until_tau0 = 0, memory = None)
+        with tf.device("/cpu:0"):
+            scores, _, points, sp_scores = playMatches(best_player, current_player, config.EVAL_EPISODES, lg.logger_tourney, turns_until_tau0 = 0, memory = None)
         print('\nSCORES')
         print(scores)
         print('\nSTARTING PLAYER / NON-STARTING PLAYER SCORES')

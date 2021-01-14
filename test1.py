@@ -1,42 +1,15 @@
-import sys
-import numpy as np
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
-from datetime import datetime
- 
-shape=(int(10000),int(10000))
- 
-with tf.device("/gpu:0"):
-    random_matrix = tf.random_uniform(shape=shape, minval=0, maxval=1)
-    dot_operation = tf.matmul(random_matrix, tf.transpose(random_matrix))
-    sum_operation = tf.reduce_sum(dot_operation)
- 
-startTime = datetime.now()
-with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
-        result = session.run(sum_operation)
-        print(result)
- 
-with tf.device("/gpu:0"):
-    random_matrix = tf.random_uniform(shape=shape, minval=0, maxval=1)
-    dot_operation = tf.matmul(random_matrix, tf.transpose(random_matrix))
-    sum_operation = tf.reduce_sum(dot_operation)
- 
-with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
-        result = session.run(sum_operation)
-        print(result)
+from utils import new_make_action_space, make_action_space
+import time
+# print(len(new_make_action_space()))
+action_space=make_action_space()
+for new in new_make_action_space():
+    if not new in action_space:
+        print(new)
 
-
- 
-with tf.device("/gpu:0"):
-    random_matrix = tf.random_uniform(shape=shape, minval=0, maxval=1)
-    dot_operation = tf.matmul(random_matrix, tf.transpose(random_matrix))
-    sum_operation = tf.reduce_sum(dot_operation)
- 
-with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
-        result = session.run(sum_operation)
-        print(result)
- 
-print("\n" * 2)
-print("Time taken:", datetime.now() - startTime)
-print("\n" * 2)
-
+a=time.time()
+make_action_space()
+b=time.time()
+new_make_action_space()
+c=time.time()
+print(c-b)
+print(b-a)

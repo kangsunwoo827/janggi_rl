@@ -42,8 +42,13 @@ def coord_to_action(coord):
     copy_coord=np.array(coord)
     before=copy_coord[0]
     after=copy_coord[1]
-    action_before=[(before[0]+1)%10, before[1]+1]
-    action_after=[(after[0]+1)%10, after[1]+1]
+    if before[0] == 9:
+        before[0]=-1
+    if after[0] == 9:
+        after[0]=-1
+
+    action_before=[before[0]+1, before[1]+1]
+    action_after=[after[0]+1, after[1]+1]
 
     return [action_before,action_after]
 
@@ -65,9 +70,11 @@ def action_to_coord(action):
 
 #말번호와 위치를 넣으면 도착 가능한 coord 반환
 
+
 def can_move(piece,before,gameboard,turn):
     #move_list는 행마를 이용해 이동 가능한 위치 
     move_list=[]
+    append_move=move_list.append
     #in_gung은 기물이 궁성안에 있는가 여부
     in_gung=False
     
@@ -88,12 +95,12 @@ def can_move(piece,before,gameboard,turn):
         #궁안에 있으면 대각선 추가 (졸)
         if in_gung:
             if before[1]==3:
-                move_list.append([before[0]-turn, before[1]+1])
+                append_move([before[0]-turn, before[1]+1])
             elif before[1]==5:
-                move_list.append([before[0]-turn, before[1]-1])
+                append_move([before[0]-turn, before[1]-1])
             else:
-                move_list.append([before[0]-turn, before[1]-1])
-                move_list.append([before[0]-turn, before[1]+1])
+                append_move([before[0]-turn, before[1]-1])
+                append_move([before[0]-turn, before[1]+1])
         
     if piece ==2:
             move_list=[
@@ -128,10 +135,10 @@ def can_move(piece,before,gameboard,turn):
                 ,[before[0]-2, before[1]-1]]
         
     if piece ==5:
-        move_list.append([9,before[1]])
+        append_move([9,before[1]])
         for i in range(9):
-            move_list.append([before[0],i])
-            move_list.append([i,before[1]])
+            append_move([before[0],i])
+            append_move([i,before[1]])
 
         #궁안에 있으면 대각선 추가 (포)  
         if in_gung:
@@ -139,49 +146,49 @@ def can_move(piece,before,gameboard,turn):
             if (before[0]>=7 and 3<=before[1] and before[1] <=5) :
                 if before[0]%2==1 and before[1]%2==1:
                     if gameboard[8,4]!=0 and abs(gameboard[8,4])!=5:
-                        move_list.append([16-before[0],8-before[1]])
+                        append_move([16-before[0],8-before[1]])
             else:
                 if (before[1]%2)!=(before[0]%2):
                     if gameboard[1,4]!=0 and abs(gameboard[1,4])!=5:
-                            move_list.append([2-before[0],8-before[1]])
+                            append_move([2-before[0],8-before[1]])
                 
         
 
     #궁안에 있으면 대각선 추가 (차)          
     if piece == 6:
         for i in range(9):
-            move_list.append([before[0],i])
-            move_list.append([i,before[1]])
-        move_list.append([9,before[1]])
+            append_move([before[0],i])
+            append_move([i,before[1]])
+        append_move([9,before[1]])
                 
         if in_gung:
             #아래쪽에 있을 때
             if (before[0]>=7 and 3<=before[1] and before[1] <=5):
                 if before[1]==4 and before[0]==8:
-                    move_list.append([before[0]+1,before[1]+1])
-                    move_list.append([before[0]+1,before[1]-1])
-                    move_list.append([before[0]-1,before[1]+1])
-                    move_list.append([before[0]-1,before[1]-1])
+                    append_move([before[0]+1,before[1]+1])
+                    append_move([before[0]+1,before[1]-1])
+                    append_move([before[0]-1,before[1]+1])
+                    append_move([before[0]-1,before[1]-1])
                 
                 elif before[0]%2==1 and before[1]%2==1:
-                    move_list.append([8,4])
+                    append_move([8,4])
                     if gameboard[8,4]==0:
-                        move_list.append([16-before[0],8-before[1]])
+                        append_move([16-before[0],8-before[1]])
                     
             #위쪽 궁에 있을 때
             else:
                 
                 if (before[1]%2)!=(before[0]%2):
                     if before[1]==4:
-                        move_list.append([before[0]+1,before[1]+1])
-                        move_list.append([before[0]+1,before[1]-1])
-                        move_list.append([before[0]-1,before[1]+1])
-                        move_list.append([before[0]-1,before[1]-1])
+                        append_move([before[0]+1,before[1]+1])
+                        append_move([before[0]+1,before[1]-1])
+                        append_move([before[0]-1,before[1]+1])
+                        append_move([before[0]-1,before[1]-1])
                 
                     else:
-                        move_list.append([1,4])
+                        append_move([1,4])
                         if gameboard[1,4]==0:
-                            move_list.append([2-before[0],8-before[1]])
+                            append_move([2-before[0],8-before[1]])
             
             
     if piece ==7:
@@ -207,7 +214,7 @@ def can_move(piece,before,gameboard,turn):
             continue
             
         #궁밖으로 못나감, 대각선으로 이동할 수 없는 곳이 있음
-        if in_gung:
+        if in_gung and piece!=3 and piece!=4:
             if(before[0]>=7 and 3<=before[1] and before[1] <=5):
                 
                 if (after[0]<7 or after[1]<3 or after[1]>5)  and (piece==2 or piece==7):
@@ -350,34 +357,65 @@ def can_move(piece,before,gameboard,turn):
 #모든 상황에서의 action space를 내뱉는 함수. 
 #마와 상을 제외하면 모두 상하좌우 움직임이므로 차의 움직임으로 커버할 수 있음.
 #can_move를 이용해서 존재할 수 있는 모든 gameboard 계산
-
 def make_action_space():
     coord_space=[]
+    append=coord_space.append
     for x in range(9):
         for y in range(10):
             #직선
-            board_lin=np.zeros((10,9))
-            board_lin[y,x]=6
-            before=[y,x]
-            for after in can_move(6,before,board_lin,1):
-                coord_space.append([before,after])
-
+            for i in range(1,10):
+                append([[y,x], [y+i,x]])
+                append([[y,x], [y-i,x]])
+                append([[y,x], [y,x+i]])
+                append([[y,x], [y,x-i]])
             #상
-            board_sang=np.zeros((10,9))
-            board_sang[y,x]=3
-            before=[y,x]
-            for after in can_move(3,before,board_sang,1):
-                coord_space.append([before,after])
+            append([[y,x], [y+2,x+3]])
+            append([[y,x], [y+2,x-3]])
+            append([[y,x], [y-2,x+3]])
+            append([[y,x], [y-2,x-3]])
+            append([[y,x], [y+3,x+2]])
+            append([[y,x], [y+3,x-2]])
+            append([[y,x], [y-3,x+2]])
+            append([[y,x], [y-3,x-2]])
 
             #마
-            board_ma=np.zeros((10,9))
-            board_ma[y,x]=4
-            before=[y,x]
-            for after in can_move(4,before,board_ma,1):
-                coord_space.append([before,after])
+            append([[y,x], [y+1,x+2]])
+            append([[y,x], [y+1,x-2]])
+            append([[y,x], [y-1,x+2]])
+            append([[y,x], [y-1,x-2]])
+            append([[y,x], [y+2,x+1]])
+            append([[y,x], [y+2,x-1]])
+            append([[y,x], [y-2,x+1]])
+            append([[y,x], [y-2,x-1]])
+    #대각선
+    append([[0,3], [1,4]])
+    append([[0,3], [2,5]])
+    append([[0,5], [1,4]])
+    append([[0,5], [2,3]])
+    append([[2,3], [0,5]])
+    append([[2,3], [1,4]])
+    append([[2,5], [0,3]])
+    append([[2,5], [1,4]])
+    append([[1,4], [0,3]])
+    append([[1,4], [0,5]])
+    append([[1,4], [2,3]])
+    append([[1,4], [2,5]])
+    #---
+    append([[9,3], [8,4]])
+    append([[9,3], [7,5]])
+    append([[9,5], [8,4]])
+    append([[9,5], [7,3]])
+    append([[7,3], [9,5]])
+    append([[7,3], [8,4]])
+    append([[7,5], [9,3]])
+    append([[7,5], [8,4]])
+    append([[8,4], [9,3]])
+    append([[8,4], [9,5]])
+    append([[8,4], [7,3]])
+    append([[8,4], [7,5]])
     
     #coord-> action
-    action_space=[coord_to_action(coord) for coord in coord_space]
+    action_space=[coord_to_action(coord) for coord in coord_space if 0<=coord[1][0]<=9 and 0<=coord[1][1]<=8]
 
     return action_space
 
@@ -396,8 +434,6 @@ def identity_space_index():
       
 
     return identity_index
-
-
 
 
 def action_to_message(action):

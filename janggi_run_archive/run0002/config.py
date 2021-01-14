@@ -1,11 +1,11 @@
 #### SELF PLAY
-EPISODES = 5#25
-MCTS_SIMS = 800 #50
+EPISODES = 1#25
+MCTS_SIMS = 800 #논문 
 MEMORY_SIZE = 30000 # 30000
-TURNS_UNTIL_TAU0 = 30 # turn on which it starts playing deterministically
-CPUCT = 1 #A hyperparameter determining the level of exploration.
-EPSILON = 0.2
-ALPHA = 0.8
+TURNS_UNTIL_TAU0 = 0 # turn on which it starts playing deterministically
+CPUCT = 2 #A hyperparameter determining the level of exploration.
+EPSILON = 0.5 # 원래 0.2
+ALPHA = 0.15
 
 
 #### RETRAINING

@@ -6,10 +6,10 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from keras.models import Sequential, load_model, Model
-from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, Activation, LeakyReLU, add
-from keras.optimizers import SGD
-from keras import regularizers
+from tensorflow.keras.models import Sequential, load_model, Model
+from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, Activation, LeakyReLU, add
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras import regularizers
 
 from loss import softmax_cross_entropy_with_logits
 
