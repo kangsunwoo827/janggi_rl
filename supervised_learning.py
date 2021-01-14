@@ -78,45 +78,45 @@ def gib_to_data(path='gibo2020.txt'):
     return [tot_input,tot_score,tot_action]
 
 
-# gib_2020_data=gib_to_data()
+gib_2020_data=gib_to_data()
 import pickle
-# pickle.dump(gib_2020_data, open( "gib2020.p", "wb" ) )
+pickle.dump(gib_2020_data, open( "gib2020.p", "wb" ) )
 
-data = pickle.load( open( "gib2020.p",   "rb" ) )
-input_data=[d[:-1] for d in data[0]]
-input_data=[y for x in input_data for y in x]
-value_data=[d[:-1] for d in data[1]]
-value_data=[y for x in value_data for y in x]
-policy_data=[d[1:] for d in data[2]]
-policy_data=[y for x in policy_data for y in x]
+# data = pickle.load( open( "gib2020.p",   "rb" ) )
+# input_data=[d[:-1] for d in data[0]]
+# input_data=[y for x in input_data for y in x]
+# value_data=[d[:-1] for d in data[1]]
+# value_data=[y for x in value_data for y in x]
+# policy_data=[d[1:] for d in data[2]]
+# policy_data=[y for x in policy_data for y in x]
 
-print(input_data[0])
-print(policy_data[0])
-total_data=[input_data,value_data,policy_data]
+# print(input_data[0])
+# print(policy_data[0])
+# total_data=[input_data,value_data,policy_data]
 
-for i in range():
-    minibatch = random.sample(total_data, 256)
-    training_states = np.array([self.model.convertToModelInput(row['state']) for row in minibatch])
-    training_targets = {'value_head': np.array([row['value'] for row in minibatch])
-                        , 'policy_head': np.array([row['AV'] for row in minibatch])} 
+# for i in range():
+#     minibatch = random.sample(total_data, 256)
+#     training_states = np.array([self.model.convertToModelInput(row['state']) for row in minibatch])
+#     training_targets = {'value_head': np.array([row['value'] for row in minibatch])
+#                         , 'policy_head': np.array([row['AV'] for row in minibatch])} 
 
-    fit = self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0, batch_size = 32)
-    lg.logger_mcts.info('NEW LOSS %s', fit.history)
+#     fit = self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0, batch_size = 32)
+#     lg.logger_mcts.info('NEW LOSS %s', fit.history)
 
-    self.train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1],4))
-    self.train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1],4)) 
-    self.train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1],4)) 
+#     self.train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1],4))
+#     self.train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1],4)) 
+#     self.train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1],4)) 
 
-# plt.plot(self.train_overall_loss, 'k')
-# plt.plot(self.train_value_loss, 'k:')
-# plt.plot(self.train_policy_loss, 'k--')
+# # plt.plot(self.train_overall_loss, 'k')
+# # plt.plot(self.train_value_loss, 'k:')
+# # plt.plot(self.train_policy_loss, 'k--')
 
-# plt.legend(['train_overall_loss', 'train_value_loss', 'train_policy_loss'], loc='lower left')
+# # plt.legend(['train_overall_loss', 'train_value_loss', 'train_policy_loss'], loc='lower left')
 
-# display.clear_output(wait=True)
-# display.display(pl.gcf())
-# pl.gcf().clear()
-# time.sleep(1.0)
+# # display.clear_output(wait=True)
+# # display.display(pl.gcf())
+# # pl.gcf().clear()
+# # time.sleep(1.0)
 
-print('\n')
-self.model.printWeightAverages()
+# print('\n')
+# self.model.printWeightAverages()
