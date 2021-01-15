@@ -145,11 +145,11 @@ def can_move(piece,before,gameboard,turn):
             #아래쪽 궁에 있을 때
             if (before[0]>=7 and 3<=before[1] and before[1] <=5) :
                 if before[0]%2==1 and before[1]%2==1:
-                    if gameboard[8,4]!=0 and abs(gameboard[8,4])!=5:
+                    if gameboard[8,4]!=0 and gameboard[8,4]!=5 and gameboard[8,4]!=-5:
                         append_move([16-before[0],8-before[1]])
             else:
                 if (before[1]%2)!=(before[0]%2):
-                    if gameboard[1,4]!=0 and abs(gameboard[1,4])!=5:
+                    if gameboard[1,4]!=0 and gameboard[1,4]!=5 and gameboard[1,4]!=-5:
                             append_move([2-before[0],8-before[1]])
                 
         
@@ -278,7 +278,7 @@ def can_move(piece,before,gameboard,turn):
                 if d>0:
                     for i in range(1,d):
                         if gameboard[after[0],before[1]+i]!=0:
-                            if abs(gameboard[after[0],before[1]+i])==5:
+                            if gameboard[after[0],before[1]+i]==5 or gameboard[after[0],before[1]+i]==-5:
                                 jump_po=True
                             count+=1
                             
@@ -286,7 +286,7 @@ def can_move(piece,before,gameboard,turn):
                     for i in range(-1,d,-1):
                         if gameboard[after[0],before[1]+i]!=0:
                             
-                            if abs(gameboard[after[0],before[1]+i])==5:
+                            if gameboard[after[0],before[1]+i]==5 or gameboard[after[0],before[1]+i]==-5:
                                 jump_po=True
                             count+=1
             
@@ -295,13 +295,13 @@ def can_move(piece,before,gameboard,turn):
                 if d>0:
                     for i in range(1,d):
                         if gameboard[before[0]+i,after[1]]!=0:
-                            if abs(gameboard[before[0]+i,after[1]])==5:
+                            if gameboard[before[0]+i,after[1]]==5 or gameboard[before[0]+i,after[1]]==-5:
                                 jump_po=True
                             count+=1
                 else:
                     for i in range(-1,d,-1):
                         if gameboard[before[0]+i,after[1]]!=0:
-                            if abs(gameboard[before[0]+i,after[1]])==5:
+                            if gameboard[before[0]+i,after[1]]==5 or gameboard[before[0]+i,after[1]]==-5:
                                 jump_po=True
                             count+=1
             
@@ -309,7 +309,7 @@ def can_move(piece,before,gameboard,turn):
             if count!=1:
                 continue
                 
-            if jump_po or abs(gameboard[after[0],after[1]])==5:
+            if jump_po or (gameboard[after[0],after[1]]==5 or gameboard[after[0],after[1]]==-5):
                 continue
             
         
@@ -424,6 +424,9 @@ def identity_space_index():
     identity_index=[]
     action_space=make_action_space()
     for idx, action in enumerate(action_space):
+        if action==None:
+            identity_index.append(action_space.index(None))
+            continue
         coord=action_to_coord(action)
         before=coord[0]
         after=coord[1]
@@ -440,9 +443,11 @@ def identity_space_index():
 def action_to_message(action):
     if action == None:
         message='한수 쉼'
-    message='From'+str(action[0])+' To'+str(action[1])
+    else:
+        message='From'+str(action[0])+' To'+str(action[1])
 
     return message
+
 
 
 

@@ -77,46 +77,64 @@ def gib_to_data(path='gibo2020.txt'):
 
     return [tot_input,tot_score,tot_action]
 
-
-gib_2020_data=gib_to_data()
 import pickle
-pickle.dump(gib_2020_data, open( "gib2020.p", "wb" ) )
+import config
+from model import Residual_CNN
+import random
+import numpy as np
+import time
+from utils import make_action_space
+# gib_2020_data=gib_to_data()
 
-# data = pickle.load( open( "gib2020.p",   "rb" ) )
-# input_data=[d[:-1] for d in data[0]]
-# input_data=[y for x in input_data for y in x]
-# value_data=[d[:-1] for d in data[1]]
-# value_data=[y for x in value_data for y in x]
-# policy_data=[d[1:] for d in data[2]]
-# policy_data=[y for x in policy_data for y in x]
+# pickle.dump(gib_2020_data, open( "gib2020.p", "wb" ) )
+action_space=make_action_space()
+data = pickle.load( open( "gib2020.p",   "rb" ) )
+input_data=[d[:-1] for d in data[0]]
+input_data=[y for x in input_data for y in x]
+value_data=[d[:-1] for d in data[1]]
+value_data=[y for x in value_data for y in x]
+policy_data=[d[1:] for d in data[2]]
+policy_data=[action_space.index(y) for x in policy_data for y in x]
+policy_onehot=[]
+for index in policy_data:
+    onehot=np.zeros(2451)
+    onehot[index]=1
+    policy_onehot.append(onehot)
 
-# print(input_data[0])
-# print(policy_data[0])
-# total_data=[input_data,value_data,policy_data]
+total_data=list(zip(input_data,value_data,policy_onehot))
 
-# for i in range():
-#     minibatch = random.sample(total_data, 256)
-#     training_states = np.array([self.model.convertToModelInput(row['state']) for row in minibatch])
-#     training_targets = {'value_head': np.array([row['value'] for row in minibatch])
-#                         , 'policy_head': np.array([row['AV'] for row in minibatch])} 
+train_overall_loss=[]
+train_value_loss=[]
+train_policy_loss=[]
 
-#     fit = self.model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0, batch_size = 32)
-#     lg.logger_mcts.info('NEW LOSS %s', fit.history)
+supervised_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, (15,10,9), 2451, config.HIDDEN_CNN_LAYERS)
+model=supervised_NN
 
-#     self.train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1],4))
-#     self.train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1],4)) 
-#     self.train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1],4)) 
 
-# # plt.plot(self.train_overall_loss, 'k')
-# # plt.plot(self.train_value_loss, 'k:')
-# # plt.plot(self.train_policy_loss, 'k--')
+for i in range(200):
+    minibatch = random.sample(total_data, 2048)
+    training_states = np.array([row[0] for row in minibatch],dtype=float)
+    training_targets = {'value_head': np.array([row[1] for row in minibatch],dtype=float)
+                        , 'policy_head': np.array([row[2] for row in minibatch],dtype=float)} 
 
-# # plt.legend(['train_overall_loss', 'train_value_loss', 'train_policy_loss'], loc='lower left')
+    fit = model.fit(training_states, training_targets, epochs=config.EPOCHS, verbose=1, validation_split=0, batch_size = 32)
+    print('NEW LOSS %s'% fit.history)
 
-# # display.clear_output(wait=True)
-# # display.display(pl.gcf())
-# # pl.gcf().clear()
-# # time.sleep(1.0)
+    train_overall_loss.append(round(fit.history['loss'][config.EPOCHS - 1],4))
+    train_value_loss.append(round(fit.history['value_head_loss'][config.EPOCHS - 1],4)) 
+    train_policy_loss.append(round(fit.history['policy_head_loss'][config.EPOCHS - 1],4)) 
 
-# print('\n')
-# self.model.printWeightAverages()
+    # plt.plot(self.train_overall_loss, 'k')
+    # plt.plot(self.train_value_loss, 'k:')
+    # plt.plot(self.train_policy_loss, 'k--')
+
+    # plt.legend(['train_overall_loss', 'train_value_loss', 'train_policy_loss'], loc='lower left')
+
+    # display.clear_output(wait=True)
+    # display.display(pl.gcf())
+    # pl.gcf().clear()
+    # time.sleep(1.0)
+
+    model.printWeightAverages()
+    
+supervised_NN.write('janggi', 9999)

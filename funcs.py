@@ -83,6 +83,7 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
         window=Visualize(env.gameState)
         window.show(env.gameState)
         lasttime=time.time()
+
         while done == 0:
             
             turn = turn + 1
@@ -112,6 +113,9 @@ def playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = N
             # env.gameState.render(logger)
             window.show(state)
             print(time.time()-lasttime)
+            if time.time()-lasttime<5:
+                print(action_to_message(action))
+                print(state.board)
             lasttime=time.time()
             # print(state.board)
             if done == 1: 

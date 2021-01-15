@@ -147,7 +147,6 @@ class Agent():
 				leaf.edges.append((action,allowed_idx, newEdge))
 
 		else:
-			pass
 			lg.logger_mcts.info('GAME VALUE FOR %d: %f', leaf.playerTurn, value)
 
 		return ((value, breadcrumbs))

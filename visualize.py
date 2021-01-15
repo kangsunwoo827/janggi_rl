@@ -17,7 +17,7 @@ wait_time = 1
 Pieces_list = [None,'jol','sa','sang','ma','po','cha','wang']
 
 import os
-# os.environ['DISPLAY']
+os.environ['DISPLAY']
 
 
 class Pieces(pygame.sprite.Sprite):
